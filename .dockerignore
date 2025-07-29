@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Node modules and build artifacts
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Development files
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.coverage
+.nyc_output
+
+# Cache and temp files
+audio_cache/
+*.tmp
+
+# Documentation build
+docs/_build/
+
+# Distribution
+dist/
+build/
+*.egg-info/

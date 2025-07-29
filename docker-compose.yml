@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  docc-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8000
+      - AUDIO_CACHE_DIR=/app/audio_cache
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/docc.log
+    env_file:
+      - .env
+    volumes:
+      - audio_cache:/app/audio_cache
+      - logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for caching (for future features)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+volumes:
+  audio_cache:
+    driver: local
+  logs:
+    driver: local
+  # redis_data:
+  #   driver: local

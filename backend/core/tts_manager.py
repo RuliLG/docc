@@ -1,0 +1,94 @@
+import hashlib
+import logging
+from pathlib import Path
+from typing import Optional, List
+from backend.integrations.tts_provider import TTSProvider
+from backend.integrations.elevenlabs_provider import ElevenLabsProvider
+from backend.integrations.openai_tts_provider import OpenAITTSProvider
+from backend.core.config import get_settings
+
+logger = logging.getLogger(__name__)
+
+
+class TTSManager:
+    def __init__(self, cache_dir: Optional[str] = None):
+        settings = get_settings()
+
+        self.providers = [ElevenLabsProvider(), OpenAITTSProvider()]
+
+        # Use provided cache_dir or get from settings
+        if cache_dir:
+            self.cache_dir = Path(cache_dir)
+        else:
+            self.cache_dir = settings.get_cache_path()
+
+        self.cache_dir.mkdir(exist_ok=True)
+        self.max_cache_size_mb = settings.audio_cache_max_size_mb
+        self.provider = self._get_available_provider()
+
+        logger.info(f"TTS Manager initialized with cache dir: {self.cache_dir}")
+        if self.provider:
+            logger.info(f"Using TTS provider: {type(self.provider).__name__}")
+        else:
+            logger.warning("No TTS providers available")
+
+    def _get_available_provider(self) -> Optional[TTSProvider]:
+        """Get the first available TTS provider."""
+        for provider in self.providers:
+            if provider.is_available():
+                return provider
+        return None
+
+    def _get_cache_filename(self, text: str, voice: Optional[str] = None) -> str:
+        """Generate a cache filename based on text and voice."""
+        content = f"{text}_{voice or 'default'}"
+        hash_obj = hashlib.md5(content.encode())
+        return f"{hash_obj.hexdigest()}.mp3"
+
+    def _get_cache_path(self, filename: str) -> Path:
+        """Get the full cache file path."""
+        return self.cache_dir / filename
+
+    async def generate_or_get_cached_audio(
+        self, text: str, voice: Optional[str] = None
+    ) -> bytes:
+        """Generate audio or return cached version if available."""
+        if not self.provider:
+            raise RuntimeError(
+                "No TTS providers available. Please set ELEVENLABS_API_KEY or OPENAI_API_KEY environment variable."
+            )
+
+        # Check cache first
+        cache_filename = self._get_cache_filename(text, voice)
+        cache_path = self._get_cache_path(cache_filename)
+
+        if cache_path.exists():
+            with open(cache_path, "rb") as f:
+                return f.read()
+
+        # Generate new audio
+        audio_bytes = await self.provider.generate_speech(text, voice)
+
+        # Cache the audio
+        with open(cache_path, "wb") as f:
+            f.write(audio_bytes)
+
+        return audio_bytes
+
+    def get_supported_voices(self) -> List[str]:
+        """Get supported voices from the current provider."""
+        if not self.provider:
+            return []
+        return self.provider.get_supported_voices()
+
+    def clear_cache(self) -> None:
+        """Clear all cached audio files."""
+        for file_path in self.cache_dir.glob("*.mp3"):
+            file_path.unlink()
+
+    def get_cache_size(self) -> int:
+        """Get total size of cached audio files in bytes."""
+        total_size = 0
+        for file_path in self.cache_dir.glob("*.mp3"):
+            total_size += file_path.stat().st_size
+        return total_size
