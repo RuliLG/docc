@@ -67,6 +67,7 @@ async def generate_audio(request: TTSRequest):
             cache_hit=False,  # TODO: Implement cache hit detection
         )
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -128,20 +129,20 @@ async def get_file_content(file_path: str, from_line: int = None, to_line: int =
         path = Path(file_path)
         if not path.is_absolute():
             raise HTTPException(status_code=400, detail="File path must be absolute")
-        
+
         if not path.exists():
             raise HTTPException(status_code=404, detail="File not found")
-        
+
         if not path.is_file():
             raise HTTPException(status_code=400, detail="Path is not a file")
-        
+
         # Read the file
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
-        
+
         # Apply line range filtering if specified
         if from_line is not None and to_line is not None:
             # Convert to 0-based indexing
@@ -150,7 +151,7 @@ async def get_file_content(file_path: str, from_line: int = None, to_line: int =
             filtered_lines = lines[start:end]
         else:
             filtered_lines = lines
-        
+
         return {
             "file_path": str(path),
             "content": ''.join(filtered_lines),
@@ -158,7 +159,7 @@ async def get_file_content(file_path: str, from_line: int = None, to_line: int =
             "from_line": from_line,
             "to_line": to_line
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:

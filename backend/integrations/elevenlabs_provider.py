@@ -18,7 +18,10 @@ class ElevenLabsProvider(TTSProvider):
 
             # Generate speech using ElevenLabs
             audio = generate(
-                text=text, voice=voice_name, model="eleven_monolingual_v1"
+                api_key=self.api_key,
+                text=text,
+                voice=voice_name,
+                model="eleven_flash_v2_5",
             )
 
             return audio
