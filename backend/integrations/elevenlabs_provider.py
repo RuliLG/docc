@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from elevenlabs import generate, Voice
+from elevenlabs import generate
 from backend.integrations.tts_provider import TTSProvider
 
 
@@ -18,7 +18,7 @@ class ElevenLabsProvider(TTSProvider):
 
             # Generate speech using ElevenLabs
             audio = generate(
-                text=text, voice=Voice(voice_name), model="eleven_monolingual_v1"
+                text=text, voice=voice_name, model="eleven_monolingual_v1"
             )
 
             return audio

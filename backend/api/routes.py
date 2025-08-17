@@ -11,6 +11,8 @@ from backend.core.script_generator import ScriptGenerator
 from backend.core.tts_manager import TTSManager
 import io
 import uuid
+import os
+from pathlib import Path
 
 router = APIRouter()
 
@@ -116,3 +118,48 @@ async def clear_cache():
 @router.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+@router.get("/file-content")
+async def get_file_content(file_path: str, from_line: int = None, to_line: int = None):
+    """Get content of a file with optional line range filtering."""
+    try:
+        # Security check - ensure the path is absolute and exists
+        path = Path(file_path)
+        if not path.is_absolute():
+            raise HTTPException(status_code=400, detail="File path must be absolute")
+        
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        if not path.is_file():
+            raise HTTPException(status_code=400, detail="Path is not a file")
+        
+        # Read the file
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+        
+        # Apply line range filtering if specified
+        if from_line is not None and to_line is not None:
+            # Convert to 0-based indexing
+            start = max(0, from_line - 1)
+            end = min(len(lines), to_line)
+            filtered_lines = lines[start:end]
+        else:
+            filtered_lines = lines
+        
+        return {
+            "file_path": str(path),
+            "content": ''.join(filtered_lines),
+            "total_lines": len(lines),
+            "from_line": from_line,
+            "to_line": to_line
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

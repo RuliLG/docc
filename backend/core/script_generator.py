@@ -1,11 +1,14 @@
 import json
 import os
+import logging
 from typing import List, Union
 from backend.models.script import TextBlock, CodeBlock, LineRange
 from backend.integrations.ai_provider import AIProvider
 from backend.integrations.claude_provider import ClaudeProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
 from backend.integrations.openai_ai_provider import OpenAIProvider
+
+logger = logging.getLogger(__name__)
 
 
 class ScriptGenerator:
@@ -24,11 +27,37 @@ class ScriptGenerator:
     ) -> List[Union[TextBlock, CodeBlock]]:
         prompt = self._build_prompt(repository_path, question)
 
-        ai_response = await self.ai_provider.analyze_repository(
-            repository_path=repository_path, question=question, prompt=prompt
-        )
-
-        return self._parse_ai_response(ai_response)
+        # Try all available providers in order
+        last_error = None
+        for i, provider in enumerate(self.providers):
+            if not provider.is_available():
+                continue
+                
+            provider_name = provider.__class__.__name__
+            logger.info(f"Attempting to use {provider_name}...")
+            
+            try:
+                ai_response = await provider.analyze_repository(
+                    repository_path=repository_path, question=question, prompt=prompt
+                )
+                
+                # If we got a response, try to parse it
+                if ai_response:
+                    logger.info(f"Successfully got response from {provider_name}")
+                    return self._parse_ai_response(ai_response)
+                else:
+                    logger.warning(f"{provider_name} returned empty response")
+                    
+            except Exception as e:
+                logger.error(f"{provider_name} failed: {str(e)}")
+                last_error = e
+                # Continue to next provider
+                
+        # If we get here, all providers failed
+        if last_error:
+            raise RuntimeError(f"All AI providers failed. Last error: {str(last_error)}")
+        else:
+            raise RuntimeError("No AI providers are available")
 
     def _load_system_prompt(self) -> str:
         """Load the system prompt from the prompts file."""
