@@ -69,6 +69,17 @@ function App() {
     }
   };
 
+  const handleExit = () => {
+    // Reset state to go back to the form
+    setScriptData(null);
+    setSessionFolder(null);
+    setError(null);
+    // Clear URL params if any
+    if (window.location.search) {
+      window.history.pushState({}, document.title, window.location.pathname);
+    }
+  };
+
   if (loading) {
     return (
       <div className="App loading">
@@ -136,7 +147,11 @@ function App() {
 
   return (
     <div className="App">
-      <VideoPlayer scriptData={scriptData} sessionFolder={sessionFolder || undefined} />
+      <VideoPlayer 
+        scriptData={scriptData} 
+        sessionFolder={sessionFolder || undefined} 
+        onExit={handleExit}
+      />
     </div>
   );
 }

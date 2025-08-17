@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScriptData, VideoState, ScriptBlock } from '../types/script';
-import { Play, Pause, SkipBack, SkipForward, Square } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Square, X } from 'lucide-react';
 import { AudioService } from '../services/audioService';
 import TextRenderer from './TextRenderer';
 import CodeRenderer from './CodeRenderer';
@@ -9,9 +9,10 @@ import './VideoPlayer.css';
 interface VideoPlayerProps {
   scriptData: ScriptData;
   sessionFolder?: string;
+  onExit?: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, onExit }) => {
   const [videoState, setVideoState] = useState<VideoState>({
     currentBlock: 0,
     isPlaying: false,
@@ -153,8 +154,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
   return (
     <div className="video-player">
       <div className="video-header">
-        <h2>{scriptData.question}</h2>
-        <p className="repository-path">Repository: {scriptData.repository_path}</p>
+        <div className="header-content">
+          <h2>{scriptData.question}</h2>
+          <p className="repository-path">Repository: {scriptData.repository_path}</p>
+        </div>
+        {onExit && (
+          <button className="exit-button" onClick={onExit} title="Exit and return to form">
+            <X size={24} />
+          </button>
+        )}
       </div>
 
       <div className="video-content">
