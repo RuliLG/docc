@@ -23,7 +23,12 @@ class ElevenLabsProvider(TTSProvider):
                 voice=voice_name,
                 model="eleven_flash_v2_5",
             )
-
+            
+            # Convert to bytes if it's a generator
+            if hasattr(audio, '__iter__') and not isinstance(audio, (bytes, bytearray)):
+                audio_bytes = b''.join(audio)
+                return audio_bytes
+            
             return audio
         except Exception as e:
             raise RuntimeError(f"ElevenLabs TTS failed: {str(e)}")

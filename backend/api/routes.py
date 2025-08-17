@@ -45,7 +45,37 @@ async def generate_script(request: ScriptRequest):
         script = await script_generator.generate(
             repository_path=request.repository_path, question=request.question
         )
-        return ScriptResponse(script=script)
+        
+        # Pre-generate audio for all script blocks
+        tts_manager = get_tts_manager()
+        audio_urls = []
+        
+        # Check if TTS is available
+        if not tts_manager.provider:
+            print("WARNING: No TTS provider available, skipping audio generation")
+            return ScriptResponse(script=script, audio_files=None)
+        
+        for i, block in enumerate(script):
+            # Generate audio for the markdown content
+            print(f"Generating audio for block {i}: {block.markdown[:50]}...")
+            audio_bytes = await tts_manager.generate_or_get_cached_audio(
+                text=block.markdown, voice=None  # Use default voice
+            )
+            
+            # Validate audio data
+            if not audio_bytes or len(audio_bytes) == 0:
+                print(f"WARNING: Empty audio generated for block {i}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate audio for block {i}")
+            
+            # Generate unique ID for this audio
+            audio_id = str(uuid.uuid4())
+            temp_audio_files[audio_id] = audio_bytes
+            print(f"Generated audio {audio_id}, size: {len(audio_bytes)} bytes")
+            
+            # Add the audio URL to the list
+            audio_urls.append(f"/api/v1/audio/{audio_id}")
+        
+        return ScriptResponse(script=script, audio_files=audio_urls)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -77,6 +107,9 @@ async def get_audio(audio_id: str):
         raise HTTPException(status_code=404, detail="Audio file not found")
 
     audio_bytes = temp_audio_files[audio_id]
+    
+    # Debug logging
+    print(f"Serving audio {audio_id}, size: {len(audio_bytes)} bytes")
 
     return StreamingResponse(
         io.BytesIO(audio_bytes),
