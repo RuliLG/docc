@@ -30,7 +30,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
     if (sessionFolder) {
       audioService.setSessionFolder(sessionFolder);
     }
-    
+
     // Stop audio when component unmounts
     return () => {
       audioService.stopCurrentAudio();
@@ -53,7 +53,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
   const getCurrentBlockText = (): string => {
     const currentBlock = getCurrentBlock();
     if (!currentBlock) return '';
-    
+
     return currentBlock.markdown;
   };
 
@@ -63,10 +63,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
 
     setIsAudioLoading(true);
     setError(null);
-    
+
     try {
       setVideoState(prev => ({ ...prev, isPlaying: true, isPaused: false }));
-      
+
       // Check if we have pre-generated audio URLs from the response
       if (scriptData.audio_files && scriptData.audio_files[videoState.currentBlock]) {
         const audioUrl = scriptData.audio_files[videoState.currentBlock];
@@ -79,13 +79,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
         } else {
           // Fallback to generating audio from text
           const blockText = getCurrentBlockText();
-          await audioService.playAudio(blockText, undefined, videoState.playbackSpeed);
+          await audioService.playAudio(blockText, videoState.playbackSpeed);
         }
       }
-      
+
       // Audio finished playing
       setVideoState(prev => ({ ...prev, isPlaying: false, isPaused: false }));
-      
+
       // Auto-advance to next block if autoPlay is enabled
       if (autoPlay && videoState.currentBlock < scriptData.script.length - 1) {
         setTimeout(() => {
@@ -111,10 +111,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
 
   const handleStop = () => {
     audioService.stopCurrentAudio();
-    setVideoState(prev => ({ 
-      ...prev, 
-      isPlaying: false, 
-      isPaused: false, 
+    setVideoState(prev => ({
+      ...prev,
+      isPlaying: false,
+      isPaused: false,
       currentBlock: 0,
       shouldAutoPlay: false
     }));
@@ -164,7 +164,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
             <button onClick={() => setError(null)}>×</button>
           </div>
         )}
-        
+
         {currentBlock && (
           <div className="block-container">
             {currentBlock.type === 'text' ? (
@@ -181,7 +181,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
           <button onClick={handlePrevious} disabled={videoState.currentBlock === 0}>
             <SkipBack size={20} />
           </button>
-          
+
           {videoState.isPlaying ? (
             <button onClick={handlePause} className="play-pause-btn" disabled={isAudioLoading}>
               <Pause size={24} />
@@ -196,8 +196,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
             <Square size={20} />
           </button>
 
-          <button 
-            onClick={handleNext} 
+          <button
+            onClick={handleNext}
             disabled={videoState.currentBlock === scriptData.script.length - 1}
           >
             <SkipForward size={20} />
@@ -209,7 +209,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
             {videoState.currentBlock + 1} / {scriptData.script.length}
           </span>
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill"
               style={{
                 width: `${((videoState.currentBlock + 1) / scriptData.script.length) * 100}%`
@@ -220,11 +220,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
 
         <div className="speed-control">
           <label>Speed: </label>
-          <select 
-            value={videoState.playbackSpeed} 
-            onChange={(e) => setVideoState(prev => ({ 
-              ...prev, 
-              playbackSpeed: parseFloat(e.target.value) 
+          <select
+            value={videoState.playbackSpeed}
+            onChange={(e) => setVideoState(prev => ({
+              ...prev,
+              playbackSpeed: parseFloat(e.target.value)
             }))}
           >
             <option value={0.5}>0.5x</option>
@@ -237,18 +237,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder }) 
 
         <div className="auto-play-control">
           <label>
-            <input 
-              type="checkbox" 
-              checked={autoPlay} 
+            <input
+              type="checkbox"
+              checked={autoPlay}
               onChange={(e) => setAutoPlay(e.target.checked)}
             />
             Auto-play
           </label>
           {autoPlay && (
             <label className="delay-control">
-              Delay: 
-              <select 
-                value={autoPlayDelay} 
+              Delay:
+              <select
+                value={autoPlayDelay}
                 onChange={(e) => setAutoPlayDelay(parseInt(e.target.value))}
               >
                 <option value={0}>No delay</option>

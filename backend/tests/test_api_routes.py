@@ -20,7 +20,6 @@ def mock_script_generator():
 def mock_tts_manager():
     mock = Mock()
     mock.generate_or_get_cached_audio = AsyncMock()
-    mock.get_supported_voices = Mock()
     mock.get_cache_size = Mock()
     mock.clear_cache = Mock()
     mock.cache_dir = Mock()
@@ -82,7 +81,7 @@ async def test_generate_audio_success(client, mock_tts_manager):
     with patch("backend.api.routes.get_tts_manager", return_value=mock_tts_manager):
         response = client.post(
             "/api/v1/generate-audio",
-            json={"text": "Hello, world!", "voice": "test_voice"},
+            json={"text": "Hello, world!"},
         )
 
     assert response.status_code == 200
@@ -98,24 +97,11 @@ def test_generate_audio_failure(client, mock_tts_manager):
     with patch("backend.api.routes.get_tts_manager", return_value=mock_tts_manager):
         response = client.post(
             "/api/v1/generate-audio",
-            json={"text": "Hello, world!", "voice": "test_voice"},
+            json={"text": "Hello, world!"},
         )
 
     assert response.status_code == 500
     assert "TTS failed" in response.json()["detail"]
-
-
-def test_get_voices(client, mock_tts_manager):
-    mock_tts_manager.get_supported_voices.return_value = ["voice1", "voice2", "voice3"]
-    mock_tts_manager.provider.__class__.__name__ = "MockProvider"
-
-    with patch("backend.api.routes.get_tts_manager", return_value=mock_tts_manager):
-        response = client.get("/api/v1/voices")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["voices"] == ["voice1", "voice2", "voice3"]
-    assert data["provider"] == "MockProvider"
 
 
 def test_get_cache_stats(client, mock_tts_manager):

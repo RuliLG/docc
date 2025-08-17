@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 import openai
 from backend.integrations.tts_provider import TTSProvider
 
@@ -11,16 +10,14 @@ class OpenAITTSProvider(TTSProvider):
         if self.api_key:
             openai.api_key = self.api_key
 
-    async def generate_speech(self, text: str, voice: Optional[str] = None) -> bytes:
+    async def generate_speech(self, text: str) -> bytes:
         if not self.is_available():
             raise RuntimeError("OpenAI API key not available")
 
         try:
-            voice_name = voice or self.default_voice
-
-            # Generate speech using OpenAI TTS
+            # Generate speech using OpenAI TTS with default voice
             response = openai.audio.speech.create(
-                model="tts-1", voice=voice_name, input=text
+                model="tts-1", voice=self.default_voice, input=text
             )
 
             return response.content
@@ -30,5 +27,3 @@ class OpenAITTSProvider(TTSProvider):
     def is_available(self) -> bool:
         return self.api_key is not None
 
-    def get_supported_voices(self) -> list[str]:
-        return ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]

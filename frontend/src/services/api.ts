@@ -9,17 +9,11 @@ export interface ScriptRequest {
 
 export interface TTSRequest {
   text: string;
-  voice?: string;
 }
 
 export interface TTSResponse {
   audio_url: string;
   cache_hit: boolean;
-}
-
-export interface VoicesResponse {
-  voices: string[];
-  provider: string;
 }
 
 export interface CacheStatsResponse {
@@ -69,16 +63,6 @@ export class ApiService {
 
   static async getAudioUrl(audioId: string): Promise<string> {
     return `${API_BASE_URL}/audio/${audioId}`;
-  }
-
-  static async getVoices(): Promise<VoicesResponse> {
-    const response = await fetch(`${API_BASE_URL}/voices`);
-
-    if (!response.ok) {
-      throw new Error(`Failed to get voices: ${response.statusText}`);
-    }
-
-    return response.json();
   }
 
   static async getCacheStats(): Promise<CacheStatsResponse> {

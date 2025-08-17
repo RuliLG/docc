@@ -4,7 +4,6 @@ from backend.models.script import ScriptRequest, ScriptResponse
 from backend.models.tts import (
     TTSRequest,
     TTSResponse,
-    VoicesResponse,
     CacheStatsResponse,
 )
 from backend.core.script_generator import ScriptGenerator
@@ -59,7 +58,7 @@ async def generate_script(request: ScriptRequest):
             # Generate audio for the markdown content
             print(f"Generating audio for block {i}: {block.markdown[:50]}...")
             audio_bytes = await tts_manager.generate_or_get_cached_audio(
-                text=block.markdown, voice=None  # Use default voice
+                text=block.markdown
             )
             
             # Validate audio data
@@ -85,7 +84,7 @@ async def generate_audio(request: TTSRequest):
     try:
         tts_manager = get_tts_manager()
         audio_bytes = await tts_manager.generate_or_get_cached_audio(
-            text=request.text, voice=request.voice
+            text=request.text
         )
 
         # Generate unique ID for this audio
@@ -116,17 +115,6 @@ async def get_audio(audio_id: str):
         media_type="audio/mpeg",
         headers={"Content-Disposition": "inline; filename=audio.mp3"},
     )
-
-
-@router.get("/voices", response_model=VoicesResponse)
-async def get_voices():
-    tts_manager = get_tts_manager()
-    voices = tts_manager.get_supported_voices()
-    provider_name = (
-        type(tts_manager.provider).__name__ if tts_manager.provider else "None"
-    )
-
-    return VoicesResponse(voices=voices, provider=provider_name)
 
 
 @router.get("/cache/stats", response_model=CacheStatsResponse)

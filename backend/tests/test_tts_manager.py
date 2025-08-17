@@ -10,14 +10,11 @@ class MockTTSProvider(TTSProvider):
     def __init__(self, available=True):
         self._available = available
 
-    async def generate_speech(self, text: str, voice=None) -> bytes:
+    async def generate_speech(self, text: str) -> bytes:
         return f"mock_audio_for_{text}".encode()
 
     def is_available(self) -> bool:
         return self._available
-
-    def get_supported_voices(self) -> list[str]:
-        return ["mock_voice_1", "mock_voice_2"]
 
 
 @pytest.fixture
@@ -83,20 +80,6 @@ async def test_generate_or_get_cached_audio_no_provider():
             await manager.generate_or_get_cached_audio("test")
 
 
-def test_get_supported_voices(tts_manager_with_mock_provider):
-    voices = tts_manager_with_mock_provider.get_supported_voices()
-    assert voices == ["mock_voice_1", "mock_voice_2"]
-
-
-def test_get_supported_voices_no_provider():
-    with tempfile.TemporaryDirectory() as temp_dir:
-        manager = TTSManager(cache_dir=temp_dir)
-        manager.provider = None
-
-        voices = manager.get_supported_voices()
-        assert voices == []
-
-
 def test_clear_cache(tts_manager_with_mock_provider):
     # Create some mock cache files
     cache_dir = Path(tts_manager_with_mock_provider.cache_dir)
@@ -121,14 +104,14 @@ def test_get_cache_size(tts_manager_with_mock_provider):
 
 
 def test_cache_filename_generation(tts_manager_with_mock_provider):
-    filename1 = tts_manager_with_mock_provider._get_cache_filename("Hello", "voice1")
-    filename2 = tts_manager_with_mock_provider._get_cache_filename("Hello", "voice2")
-    filename3 = tts_manager_with_mock_provider._get_cache_filename("Hello", "voice1")
+    filename1 = tts_manager_with_mock_provider._get_cache_filename("Hello")
+    filename2 = tts_manager_with_mock_provider._get_cache_filename("World")
+    filename3 = tts_manager_with_mock_provider._get_cache_filename("Hello")
 
-    # Different voice should create different filename
+    # Different text should create different filename
     assert filename1 != filename2
 
-    # Same text and voice should create same filename
+    # Same text should create same filename
     assert filename1 == filename3
 
     # Should end with .mp3

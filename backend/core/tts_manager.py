@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 from backend.integrations.tts_provider import TTSProvider
 from backend.integrations.elevenlabs_provider import ElevenLabsProvider
 from backend.integrations.openai_tts_provider import OpenAITTSProvider
@@ -39,10 +39,9 @@ class TTSManager:
                 return provider
         return None
 
-    def _get_cache_filename(self, text: str, voice: Optional[str] = None) -> str:
-        """Generate a cache filename based on text and voice."""
-        content = f"{text}_{voice or 'default'}"
-        hash_obj = hashlib.md5(content.encode())
+    def _get_cache_filename(self, text: str) -> str:
+        """Generate a cache filename based on text."""
+        hash_obj = hashlib.md5(text.encode())
         return f"{hash_obj.hexdigest()}.mp3"
 
     def _get_cache_path(self, filename: str) -> Path:
@@ -50,7 +49,7 @@ class TTSManager:
         return self.cache_dir / filename
 
     async def generate_or_get_cached_audio(
-        self, text: str, voice: Optional[str] = None
+        self, text: str
     ) -> bytes:
         """Generate audio or return cached version if available."""
         if not self.provider:
@@ -59,7 +58,7 @@ class TTSManager:
             )
 
         # Check cache first
-        cache_filename = self._get_cache_filename(text, voice)
+        cache_filename = self._get_cache_filename(text)
         cache_path = self._get_cache_path(cache_filename)
 
         if cache_path.exists():
@@ -67,19 +66,13 @@ class TTSManager:
                 return f.read()
 
         # Generate new audio
-        audio_bytes = await self.provider.generate_speech(text, voice)
+        audio_bytes = await self.provider.generate_speech(text)
 
         # Cache the audio
         with open(cache_path, "wb") as f:
             f.write(audio_bytes)
 
         return audio_bytes
-
-    def get_supported_voices(self) -> List[str]:
-        """Get supported voices from the current provider."""
-        if not self.provider:
-            return []
-        return self.provider.get_supported_voices()
 
     def clear_cache(self) -> None:
         """Clear all cached audio files."""

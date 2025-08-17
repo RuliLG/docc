@@ -40,8 +40,8 @@ export class AudioService {
     }
   }
 
-  async generateAndCacheAudio(text: string, voice?: string): Promise<HTMLAudioElement> {
-    const cacheKey = `${text}_${voice || 'default'}`;
+  async generateAndCacheAudio(text: string): Promise<HTMLAudioElement> {
+    const cacheKey = text;
 
     // Check if audio is already cached
     if (this.audioCache.has(cacheKey)) {
@@ -50,7 +50,7 @@ export class AudioService {
 
     try {
       // Generate audio via API (fallback for when no session is available)
-      const ttsResponse = await ApiService.generateAudio({ text, voice });
+      const ttsResponse = await ApiService.generateAudio({ text });
 
       // Extract audio ID from URL
       const audioId = ttsResponse.audio_url.split('/').pop()!;
@@ -158,12 +158,12 @@ export class AudioService {
     }
   }
 
-  async playAudio(text: string, voice?: string, playbackSpeed: number = 1.0): Promise<void> {
+  async playAudio(text: string, playbackSpeed: number = 1.0): Promise<void> {
     try {
       // Stop current audio if playing
       this.stopCurrentAudio();
 
-      const audio = await this.generateAndCacheAudio(text, voice);
+      const audio = await this.generateAndCacheAudio(text);
       audio.playbackRate = playbackSpeed;
 
       this.currentAudio = audio;

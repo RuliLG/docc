@@ -17,17 +17,8 @@ async def test_api():
         except Exception as e:
             print(f"Error: {e}")
         
-        # Test voices endpoint
-        print("\n2. Get voices:")
-        try:
-            response = await client.get(f"{base_url}/voices")
-            print(f"Status: {response.status_code}")
-            print(f"Response: {response.json()}")
-        except Exception as e:
-            print(f"Error: {e}")
-        
         # Test cache stats
-        print("\n3. Cache stats:")
+        print("\n2. Cache stats:")
         try:
             response = await client.get(f"{base_url}/cache/stats")
             print(f"Status: {response.status_code}")
@@ -36,11 +27,11 @@ async def test_api():
             print(f"Error: {e}")
         
         # Test TTS generation (will likely fail without API keys)
-        print("\n4. Generate TTS (may fail without API keys):")
+        print("\n3. Generate TTS (may fail without API keys):")
         try:
             response = await client.post(
                 f"{base_url}/generate-audio",
-                json={"text": "Hello, this is a test.", "voice": None}
+                json={"text": "Hello, this is a test."}
             )
             print(f"Status: {response.status_code}")
             if response.status_code == 200:
