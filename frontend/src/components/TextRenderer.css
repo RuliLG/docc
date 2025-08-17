@@ -1,0 +1,90 @@
+.text-renderer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background-color: #1e1e1e;
+}
+
+.text-content {
+  max-width: 800px;
+  width: 100%;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.text-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.text-content h2 {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.text-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.6rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.text-content p {
+  margin-bottom: 1rem;
+  color: #d4d4d4;
+}
+
+.text-content ul, .text-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.text-content li {
+  margin-bottom: 0.5rem;
+  color: #d4d4d4;
+}
+
+.text-content code {
+  background: #2d2d30;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  color: #d7ba7d;
+}
+
+.text-content pre {
+  background: #2d2d30;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.text-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.text-content blockquote {
+  border-left: 4px solid #007acc;
+  margin-left: 0;
+  padding-left: 1rem;
+  color: #b0b0b0;
+  font-style: italic;
+}
+
+.text-content strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.text-content em {
+  color: #d4d4d4;
+  font-style: italic;
+}

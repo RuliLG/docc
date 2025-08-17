@@ -1,0 +1,211 @@
+.video-player {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.video-header {
+  padding: 20px;
+  border-bottom: 1px solid #333;
+  background-color: #252526;
+}
+
+.video-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.repository-path {
+  margin: 0;
+  color: #cccccc;
+  font-size: 0.9rem;
+}
+
+.video-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.error-banner {
+  background-color: #f14c4c;
+  color: #ffffff;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #333;
+}
+
+.error-banner p {
+  margin: 0;
+}
+
+.error-banner button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-banner button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.block-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-controls {
+  padding: 16px 20px;
+  background-color: #252526;
+  border-top: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-buttons button {
+  background: #007acc;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.control-buttons button:hover:not(:disabled) {
+  background: #005a9e;
+}
+
+.control-buttons button:disabled {
+  background: #3c3c3c;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.play-pause-btn {
+  background: #0e7a0d !important;
+}
+
+.play-pause-btn:hover {
+  background: #0d5a0c !important;
+}
+
+.progress-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.block-counter {
+  font-size: 0.9rem;
+  color: #cccccc;
+  min-width: 60px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #3c3c3c;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #007acc;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.speed-control label {
+  color: #cccccc;
+}
+
+.speed-control select {
+  background: #3c3c3c;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+.speed-control select:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.auto-play-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+.auto-play-control label {
+  color: #cccccc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.auto-play-control input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.delay-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delay-control select {
+  background: #3c3c3c;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+.delay-control select:focus {
+  outline: none;
+  border-color: #007acc;
+}
