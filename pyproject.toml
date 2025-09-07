@@ -24,7 +24,6 @@ classifiers = [
 dependencies = [
     "fastapi>=0.104.1",
     "uvicorn[standard]>=0.24.0",
-    "click>=8.1.7",
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "httpx>=0.25.2",
@@ -46,8 +45,6 @@ dev = [
     "mypy>=1.7.0",
 ]
 
-[project.scripts]
-docc = "cli.main:docc"
 
 [tool.black]
 line-length = 88
@@ -107,14 +104,13 @@ module = [
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["backend/tests", "cli/tests"]
+testpaths = ["backend/tests"]
 python_files = ["test_*.py", "*_test.py"]
 addopts = [
     "--strict-markers",
     "--strict-config",
     "-ra",
     "--cov=backend",
-    "--cov=cli",
     "--cov-report=term-missing",
     "--cov-report=xml",
 ]
@@ -124,7 +120,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["backend", "cli", "shared"]
+source = ["backend", "shared"]
 omit = [
     "*/tests/*",
     "*/test_*",

@@ -1,6 +1,6 @@
 # Docc - AI-Powered Repository Documentation Tool 🎥
 
-A local CLI tool that generates interactive, video-like documentation explanations for code repositories using AI agents and text-to-speech technology.
+A web-based tool that generates interactive, video-like documentation explanations for code repositories using AI agents and text-to-speech technology.
 
 ## 🎯 Overview
 
@@ -8,9 +8,9 @@ Docc allows users to ask questions about any repository and generates a "script"
 
 ### Key Features
 
-- **CLI Tool**: Simple `docc {repositoryPath} {question}` command
+- **Web Interface**: Interactive UI for generating documentation
 - **AI Analysis**: Uses Claude Code CLI or OpenCode CLI for repository analysis
-- **Interactive UI**: React-based video player with VS Code-like interface
+- **Interactive Player**: React-based video player with VS Code-like interface
 - **Text-to-Speech**: ElevenLabs and OpenAI TTS integration with caching
 - **Code Highlighting**: Monaco editor with syntax highlighting for relevant code sections
 - **Structured Output**: JSON-based script format for easy rendering
@@ -28,7 +28,6 @@ docc/
 │   ├── components/   # UI components
 │   ├── services/     # API clients
 │   └── types/        # TypeScript types
-├── cli/              # Command-line interface
 └── shared/           # Shared utilities
 ```
 
@@ -72,7 +71,6 @@ This script will:
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
-   pip install -e .
    ```
 
 3. **Set up React frontend**
@@ -133,19 +131,6 @@ OPENAI_API_KEY=your_api_key_here
 
 ## 🔧 Usage
 
-### Command Line Interface
-
-Generate a documentation script:
-
-```bash
-docc /path/to/repository "How does authentication work?"
-```
-
-Options:
-- `-o, --output`: Output file path (default: `script.json`)
-- `-v, --verbose`: Enable verbose output
-- `--help`: Show help message
-
 ### Web Interface
 
 1. **Start the backend server**
@@ -166,7 +151,7 @@ Options:
 
 ## 📁 Session Structure
 
-When you run `docc`, it creates a session folder with the following structure:
+When you generate documentation, it creates a session folder with the following structure:
 
 ```
 sessions/
@@ -269,8 +254,8 @@ Format code:
 ```bash
 # Backend
 source venv/bin/activate
-black backend/ cli/ shared/
-flake8 backend/ cli/ shared/
+black backend/ shared/
+flake8 backend/ shared/
 
 # Frontend
 cd frontend
@@ -304,18 +289,10 @@ npm run lint
    - Check CORS settings in `backend/main.py`
    - Verify API base URL in `frontend/src/services/api.ts`
 
-4. **CLI command not found**
-   - Install the package: `pip install -e .`
-   - Ensure virtual environment is activated
-   - Check that `docc` is in your PATH
-
 ### Debug Mode
 
 Enable verbose logging:
 ```bash
-# CLI
-docc /path/to/repo "question" --verbose
-
 # Backend
 uvicorn backend.main:app --log-level debug
 ```
