@@ -6,7 +6,6 @@ from backend.models.script import TextBlock, CodeBlock, LineRange
 from backend.integrations.ai_provider import AIProvider
 from backend.integrations.claude_provider import ClaudeProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
-from backend.integrations.openai_ai_provider import OpenAIProvider
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,6 @@ class ScriptGenerator:
         # Order providers by preference
         self.providers = [
             ClaudeProvider(),      # Primary: Claude Code CLI
-            OpenAIProvider(),      # Secondary: OpenAI API
             OpenCodeProvider()     # Fallback: OpenCode CLI
         ]
         self.ai_provider = self._get_available_provider()
@@ -32,27 +30,27 @@ class ScriptGenerator:
         for i, provider in enumerate(self.providers):
             if not provider.is_available():
                 continue
-                
+
             provider_name = provider.__class__.__name__
             logger.info(f"Attempting to use {provider_name}...")
-            
+
             try:
                 ai_response = await provider.analyze_repository(
                     repository_path=repository_path, question=question, prompt=prompt
                 )
-                
+
                 # If we got a response, try to parse it
                 if ai_response:
                     logger.info(f"Successfully got response from {provider_name}")
                     return self._parse_ai_response(ai_response)
                 else:
                     logger.warning(f"{provider_name} returned empty response")
-                    
+
             except Exception as e:
                 logger.error(f"{provider_name} failed: {str(e)}")
                 last_error = e
                 # Continue to next provider
-                
+
         # If we get here, all providers failed
         if last_error:
             raise RuntimeError(f"All AI providers failed. Last error: {str(last_error)}")
@@ -62,9 +60,9 @@ class ScriptGenerator:
     def _load_system_prompt(self) -> str:
         """Load the system prompt from the prompts file."""
         prompt_path = os.path.join(
-            os.path.dirname(__file__), 
-            "..", 
-            "prompts", 
+            os.path.dirname(__file__),
+            "..",
+            "prompts",
             "repository_analyzer.md"
         )
         try:
@@ -77,7 +75,7 @@ class ScriptGenerator:
     def _get_default_prompt(self) -> str:
         """Fallback system prompt if file is not found."""
         return """You are an expert code analyst. Analyze the repository and answer questions about it.
-        
+
         Respond with a valid JSON array following this structure:
         [
             {"type": "text", "markdown": "## TL;DR\\nBrief summary"},
@@ -122,7 +120,6 @@ Analyze this repository and provide a comprehensive answer to the question above
 
     def _get_available_provider(self) -> AIProvider:
         """Get the first available AI provider."""
-        available_providers = []
         for provider in self.providers:
             if provider.is_available():
                 provider_name = provider.__class__.__name__
@@ -133,8 +130,7 @@ Analyze this repository and provide a comprehensive answer to the question above
                 print(f"✗ {provider_name} is not available")
 
         raise RuntimeError(
-            "No AI providers are available. Please either:\n"
+            "No local CLI agents are available. Please either:\n"
             "1. Install Claude Code CLI (recommended)\n"
-            "2. Set OPENAI_API_KEY environment variable\n"
-            "3. Install OpenCode CLI"
+            "2. Or install OpenCode CLI"
         )

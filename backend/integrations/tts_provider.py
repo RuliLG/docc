@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class TTSProvider(ABC):
@@ -12,4 +11,3 @@ class TTSProvider(ABC):
     def is_available(self) -> bool:
         """Check if the TTS provider is available and configured."""
         pass
-

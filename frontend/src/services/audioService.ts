@@ -1,6 +1,10 @@
+import { env } from '../common/env';
 import { ApiService } from './api';
 
-const API_BASE_URL = 'http://localhost:8000';
+let API_BASE_URL = env.apiUrl;
+if (API_BASE_URL?.includes('/api/v1')) {
+  API_BASE_URL = API_BASE_URL.substring(0, API_BASE_URL.indexOf('/api/v1'));
+}
 
 export class AudioService {
   private audioCache: Map<string, HTMLAudioElement> = new Map();

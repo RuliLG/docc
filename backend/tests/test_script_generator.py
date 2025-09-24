@@ -5,7 +5,6 @@ from unittest.mock import Mock, AsyncMock, patch, mock_open
 from backend.core.script_generator import ScriptGenerator
 from backend.models.script import TextBlock, CodeBlock
 from backend.integrations.claude_provider import ClaudeProvider
-from backend.integrations.openai_ai_provider import OpenAIProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
 
 
@@ -114,36 +113,23 @@ class TestScriptGenerator:
     def test_build_prompt(self, script_generator):
         """Test prompt building with repository path and question."""
         prompt = script_generator._build_prompt("/test/repo", "How does it work?")
-        
+
         assert "/test/repo" in prompt
         assert "How does it work?" in prompt
         assert script_generator.system_prompt in prompt
 
     @patch.object(ClaudeProvider, 'is_available', return_value=True)
-    @patch.object(OpenAIProvider, 'is_available', return_value=False)
     @patch.object(OpenCodeProvider, 'is_available', return_value=False)
-    def test_get_available_provider_claude(self, mock_opencode, mock_openai, mock_claude):
+    def test_get_available_provider_claude(self, mock_opencode, mock_claude):
         """Test provider selection when Claude is available."""
         generator = ScriptGenerator()
         provider = generator.ai_provider
-        
+
         assert isinstance(provider, ClaudeProvider)
 
     @patch.object(ClaudeProvider, 'is_available', return_value=False)
-    @patch.object(OpenAIProvider, 'is_available', return_value=True)
     @patch.object(OpenCodeProvider, 'is_available', return_value=False)
-    def test_get_available_provider_openai(self, mock_opencode, mock_openai, mock_claude):
-        """Test provider selection when only OpenAI is available."""
-        with patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'}):
-            generator = ScriptGenerator()
-            provider = generator.ai_provider
-            
-            assert isinstance(provider, OpenAIProvider)
-
-    @patch.object(ClaudeProvider, 'is_available', return_value=False)
-    @patch.object(OpenAIProvider, 'is_available', return_value=False)
-    @patch.object(OpenCodeProvider, 'is_available', return_value=False)
-    def test_get_available_provider_none(self, mock_opencode, mock_openai, mock_claude):
+    def test_get_available_provider_none(self, mock_opencode, mock_claude):
         """Test error when no providers are available."""
         with pytest.raises(RuntimeError, match="No AI providers are available"):
             generator = ScriptGenerator()

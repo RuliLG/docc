@@ -16,7 +16,6 @@ class TTSManager:
 
         self.providers = [ElevenLabsProvider(), OpenAITTSProvider()]
 
-        # Use provided cache_dir or get from settings
         if cache_dir:
             self.cache_dir = Path(cache_dir)
         else:

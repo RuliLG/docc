@@ -4,6 +4,7 @@ import Editor, { Monaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { FileText } from 'lucide-react';
 import './CodeRenderer.css';
+import { env } from '../common/env';
 
 interface CodeRendererProps {
   block: CodeBlock;
@@ -24,22 +25,18 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ block }) => {
           file_path: block.file
         });
 
-        const response = await fetch(`http://localhost:8000/api/v1/file-content?${params}`);
+        const response = await fetch(`${env.apiUrl}/file-content?${params}`);
 
         if (response.ok) {
           const data = await response.json();
           setFileContent(data.content);
         } else {
-          // Fallback to mock content if API fails
           console.error('Failed to fetch file content:', response.statusText);
-          const mockContent = generateMockFileContent(block.file);
-          setFileContent(mockContent);
+          setFileContent('## Error fetching file content ##');
         }
       } catch (error) {
         console.error('Error fetching file content:', error);
-        // Fallback to mock content
-        const mockContent = generateMockFileContent(block.file);
-        setFileContent(mockContent);
+        setFileContent('## Error fetching file content ##');
       }
     };
 
@@ -125,28 +122,6 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ block }) => {
       applyLineHighlighting();
     }
   }, [fileContent, block.relevant_lines]);
-
-  const generateMockFileContent = (filePath: string): string => {
-    // This is a mock function - in reality, we'd fetch the actual file content
-    return `# Mock content for ${filePath}
-# This would be the actual file content in a real implementation
-
-def example_function():
-    """This is an example function"""
-    return "Hello, World!"
-
-class ExampleClass:
-    def __init__(self):
-        self.value = 42
-
-    def get_value(self):
-        return self.value
-
-# More code would be here...
-if __name__ == "__main__":
-    example = ExampleClass()
-    print(example.get_value())`;
-  };
 
   return (
     <div className="code-renderer">

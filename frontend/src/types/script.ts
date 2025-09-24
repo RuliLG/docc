@@ -34,3 +34,23 @@ export interface VideoState {
   playbackSpeed: number;
   shouldAutoPlay?: boolean;
 }
+
+export interface ScriptRequest {
+  repository_path: string;
+  question: string;
+}
+
+export interface TTSRequest {
+  text: string;
+}
+
+export interface TTSResponse {
+  audio_url: string;
+  cache_hit: boolean;
+}
+
+export interface CacheStatsResponse {
+  cache_size_bytes: number;
+  cache_size_mb: number;
+  cached_files_count: number;
+}

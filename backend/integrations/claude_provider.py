@@ -20,7 +20,7 @@ class ClaudeProvider(AIProvider):
 
         max_retries = 3
         retry_delay = 2  # seconds
-        
+
         for attempt in range(max_retries):
             try:
                 # Use Claude Code CLI with proper syntax
@@ -31,9 +31,9 @@ class ClaudeProvider(AIProvider):
                     "--output-format", "text",  # Use text format
                     prompt  # The prompt includes both system prompt and question
                 ]
-                
+
                 logger.info(f"Attempt {attempt + 1}/{max_retries}: Running Claude CLI...")
-                
+
                 result = subprocess.run(
                     cmd,
                     capture_output=True,
@@ -42,11 +42,11 @@ class ClaudeProvider(AIProvider):
                     cwd=repository_path,  # Run from within the repo directory
                     timeout=120  # 2 minute timeout
                 )
-                
+
                 # Claude CLI returns plain text by default
                 # We need to extract any JSON from the response
                 output = result.stdout.strip()
-                
+
                 # Check if we got empty output
                 if not output:
                     logger.warning(f"Attempt {attempt + 1}: Claude returned empty response")
@@ -55,12 +55,12 @@ class ClaudeProvider(AIProvider):
                         continue
                     else:
                         raise RuntimeError("Claude returned empty response after all retries")
-                
+
                 # Try to find JSON in the output
                 # Look for array brackets that indicate our expected format
                 json_start = output.find('[')
                 json_end = output.rfind(']')
-                
+
                 if json_start != -1 and json_end != -1 and json_end > json_start:
                     json_str = output[json_start:json_end + 1]
                     try:
@@ -72,24 +72,12 @@ class ClaudeProvider(AIProvider):
                         logger.warning("Failed to parse extracted JSON, returning full output")
                         # If JSON is malformed, return the whole output
                         return output
-                
+
                 # If no JSON array found, return the entire output
                 # The script generator will handle the parsing error
                 logger.info("No JSON array found in response, returning full output")
                 return output
-                
-                    # Provide helpful error messages
-                error_msg = f"Claude Code CLI failed with exit code {e.returncode}"
-                if e.stderr:
-                    error_msg += f": {e.stderr}"
-                logger.error(f"Attempt {attempt + 1}: {error_msg}")
-                
-                if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    raise RuntimeError(error_msg)
-                    
+
             except subprocess.TimeoutExpired:
                 logger.error(f"Attempt {attempt + 1}: Claude CLI timed out")
                 if attempt < max_retries - 1:
@@ -97,7 +85,7 @@ class ClaudeProvider(AIProvider):
                     continue
                 else:
                     raise RuntimeError("Claude CLI timed out after all retries")
-                    
+
             except Exception as e:
                 logger.error(f"Attempt {attempt + 1}: Unexpected error: {str(e)}")
                 if attempt < max_retries - 1:
@@ -110,8 +98,8 @@ class ClaudeProvider(AIProvider):
         try:
             # Check if claude command exists
             result = subprocess.run(
-                [self.claude_command, "--version"], 
-                capture_output=True, 
+                [self.claude_command, "--version"],
+                capture_output=True,
                 text=True
             )
             return result.returncode == 0
