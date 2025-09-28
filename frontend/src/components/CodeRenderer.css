@@ -1,128 +1,25 @@
 .code-renderer {
-  flex: 1;
-  display: flex;
-  gap: 0;
-  background-color: #1e1e1e;
+  @apply flex flex-1 gap-0 bg-[#1e1e1e] rounded-lg overflow-hidden;
 }
 
 .code-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #1e1e1e;
+  @apply flex flex-1 flex-col bg-[#1e1e1e];
 }
 
 .file-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background-color: #2d2d30;
-  border-bottom: 1px solid #3e3e42;
-  font-size: 0.9rem;
-  color: #cccccc;
+  @apply flex items-center gap-2 p-3 bg-[#2d2d30] border-b border-[#3e3e42] text-[#cccccc] text-sm;
 }
 
 .file-path {
-  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  color: #569cd6;
+  @apply font-mono text-[#569cd6];
 }
 
 .editor-container {
-  flex: 1;
-  border: none;
+  @apply flex-1 border-none;
 }
 
 .explanation-section {
-  flex: 1;
-  background-color: #252526;
-  border-left: 1px solid #3e3e42;
-  display: flex;
-  flex-direction: column;
-}
-
-.explanation-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.explanation-content h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.explanation-content h2 {
-  font-size: 1.4rem;
-  margin-bottom: 0.8rem;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.explanation-content h3 {
-  font-size: 1.2rem;
-  margin-bottom: 0.6rem;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.explanation-content p {
-  margin-bottom: 1rem;
-  color: #d4d4d4;
-}
-
-.explanation-content ul, .explanation-content ol {
-  margin-bottom: 1rem;
-  padding-left: 1.5rem;
-}
-
-.explanation-content li {
-  margin-bottom: 0.5rem;
-  color: #d4d4d4;
-}
-
-.explanation-content code {
-  background: #2d2d30;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  color: #d7ba7d;
-  font-size: 0.9rem;
-}
-
-.explanation-content pre {
-  background: #2d2d30;
-  padding: 1rem;
-  border-radius: 6px;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-}
-
-.explanation-content pre code {
-  background: none;
-  padding: 0;
-}
-
-.explanation-content blockquote {
-  border-left: 4px solid #007acc;
-  margin-left: 0;
-  padding-left: 1rem;
-  color: #b0b0b0;
-  font-style: italic;
-}
-
-.explanation-content strong {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.explanation-content em {
-  color: #d4d4d4;
-  font-style: italic;
+  @apply flex-1 bg-[#252526] border-l border-[#3e3e42] flex flex-col;
 }
 
 /* Dimmed line styles for non-relevant code lines */

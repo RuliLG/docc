@@ -151,7 +151,7 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ block }) => {
       </div>
 
       <div className="explanation-section">
-        <div className="explanation-content">
+        <div className="prose prose-invert max-w-none p-4">
           <ReactMarkdown>{block.markdown}</ReactMarkdown>
         </div>
       </div>

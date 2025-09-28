@@ -204,12 +204,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
             </Button>
 
             {videoState.isPlaying ? (
-              <Button onClick={handlePause} className="play-pause-btn" disabled={isAudioLoading}>
+              <Button onClick={handlePause} className="play-pause-btn">
                 <Pause size={24} />
               </Button>
             ) : (
-              <Button onClick={handlePlay} className="play-pause-btn" disabled={isAudioLoading}>
-                {isAudioLoading ? '...' : <Play size={24} />}
+              <Button onClick={handlePlay} className="play-pause-btn">
+                <Play size={24} />
               </Button>
             )}
 
@@ -239,10 +239,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="0.5">0.5x</SelectItem>
-                <SelectItem value="1.0">1.0x</SelectItem>
+                <SelectItem value="1">1.0x</SelectItem>
                 <SelectItem value="1.25">1.25x</SelectItem>
                 <SelectItem value="1.5">1.5x</SelectItem>
-                <SelectItem value="2.0">2.0x</SelectItem>
+                <SelectItem value="2">2.0x</SelectItem>
               </SelectContent>
             </Select>
           </div>

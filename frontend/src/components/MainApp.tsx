@@ -193,7 +193,7 @@ function MainApp() {
   }
 
   return (
-    <div className="App">
+    <div>
       <VideoPlayer
         scriptData={scriptData}
         sessionFolder={sessionFolder || undefined}

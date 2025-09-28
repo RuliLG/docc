@@ -127,3 +127,7 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+html, body {
+  @apply font-sans antialiased;
+}
