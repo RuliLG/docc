@@ -101,3 +101,4 @@ dmypy.json
 *.tmp
 *.temp
 .tmp/
+test_audio_cache/
