@@ -26,7 +26,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Claude Code and OpenCode CLI tools
+RUN npm install -g @anthropic-ai/claude-code opencode-ai
 
 # Create app user
 RUN useradd --create-home --shell /bin/bash app
