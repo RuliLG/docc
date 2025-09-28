@@ -126,11 +126,11 @@ Analyze this repository and provide a comprehensive answer to the question above
         for provider in self.providers:
             if provider.is_available():
                 provider_name = provider.__class__.__name__
-                print(f"✓ {provider_name} is available")
+                logger.info(f"✓ {provider_name} is available")
                 return provider
             else:
                 provider_name = provider.__class__.__name__
-                print(f"✗ {provider_name} is not available")
+                logger.debug(f"✗ {provider_name} is not available")
 
         raise RuntimeError(
             "No local CLI agents are available. Please either:\n"
