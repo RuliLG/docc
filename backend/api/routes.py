@@ -115,6 +115,8 @@ async def generate_script(request: ScriptRequest):
             audio_urls.append(f"/api/v1/audio/{audio_id}")
 
         return ScriptResponse(script=script, audio_files=audio_urls)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
