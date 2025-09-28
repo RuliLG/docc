@@ -8,6 +8,7 @@ from backend.models.tts import (
 )
 from backend.core.script_generator import ScriptGenerator
 from backend.core.tts_manager import TTSManager
+from backend.core.config import get_settings
 from backend.api import system_check
 from backend.integrations.claude_provider import ClaudeProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
@@ -15,15 +16,22 @@ from backend.integrations.elevenlabs_provider import ElevenLabsProvider
 from backend.integrations.openai_tts_provider import OpenAITTSProvider
 import io
 import uuid
+import logging
+import time
 from pathlib import Path
+from collections import OrderedDict
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Include system check routes
 router.include_router(system_check.router, tags=["system"])
 
-# Store audio files temporarily for serving
-temp_audio_files = {}
+# Store audio files temporarily with TTL (time-to-live)
+# Using OrderedDict for LRU-like behavior
+temp_audio_files = OrderedDict()
+AUDIO_FILE_TTL = 3600  # 1 hour in seconds
+MAX_AUDIO_FILES = 100  # Maximum number of cached audio files
 
 # Lazy initialization of services
 _script_generator = None
@@ -44,6 +52,26 @@ def get_tts_manager():
     return _tts_manager
 
 
+def _cleanup_old_audio_files():
+    """Remove expired audio files and enforce max cache size."""
+    current_time = time.time()
+
+    # Remove expired files
+    expired_keys = [
+        audio_id for audio_id, entry in temp_audio_files.items()
+        if current_time - entry["timestamp"] > AUDIO_FILE_TTL
+    ]
+    for key in expired_keys:
+        del temp_audio_files[key]
+        logger.debug(f"Removed expired audio file: {key}")
+
+    # Enforce max cache size (LRU: remove oldest)
+    while len(temp_audio_files) > MAX_AUDIO_FILES:
+        oldest_key = next(iter(temp_audio_files))
+        del temp_audio_files[oldest_key]
+        logger.debug(f"Removed oldest audio file to maintain cache limit: {oldest_key}")
+
+
 @router.post("/generate-script", response_model=ScriptResponse)
 async def generate_script(request: ScriptRequest):
     try:
@@ -61,25 +89,26 @@ async def generate_script(request: ScriptRequest):
 
         # Check if TTS is available
         if not tts_manager.provider:
-            print("WARNING: No TTS provider available, skipping audio generation")
+            logger.warning("No TTS provider available, skipping audio generation")
             return ScriptResponse(script=script, audio_files=None)
 
         for i, block in enumerate(script):
             # Generate audio for the markdown content
-            print(f"Generating audio for block {i}: {block.markdown[:50]}...")
+            logger.info(f"Generating audio for block {i}: {block.markdown[:50]}...")
             audio_bytes = await tts_manager.generate_or_get_cached_audio(
                 text=block.markdown
             )
 
             # Validate audio data
             if not audio_bytes or len(audio_bytes) == 0:
-                print(f"WARNING: Empty audio generated for block {i}")
+                logger.warning(f"Empty audio generated for block {i}")
                 raise HTTPException(status_code=500, detail=f"Failed to generate audio for block {i}")
 
             # Generate unique ID for this audio
             audio_id = str(uuid.uuid4())
-            temp_audio_files[audio_id] = audio_bytes
-            print(f"Generated audio {audio_id}, size: {len(audio_bytes)} bytes")
+            _cleanup_old_audio_files()
+            temp_audio_files[audio_id] = {"data": audio_bytes, "timestamp": time.time()}
+            logger.info(f"Generated audio {audio_id}, size: {len(audio_bytes)} bytes")
 
             # Add the audio URL to the list
             audio_urls.append(f"/api/v1/audio/{audio_id}")
@@ -99,14 +128,15 @@ async def generate_audio(request: TTSRequest):
 
         # Generate unique ID for this audio
         audio_id = str(uuid.uuid4())
-        temp_audio_files[audio_id] = audio_bytes
+        _cleanup_old_audio_files()
+        temp_audio_files[audio_id] = {"data": audio_bytes, "timestamp": time.time()}
 
         return TTSResponse(
             audio_url=f"/api/v1/audio/{audio_id}",
             cache_hit=False,  # TODO: Implement cache hit detection
         )
     except Exception as e:
-        print(e)
+        logger.error(f"Error generating audio: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -115,10 +145,11 @@ async def get_audio(audio_id: str):
     if audio_id not in temp_audio_files:
         raise HTTPException(status_code=404, detail="Audio file not found")
 
-    audio_bytes = temp_audio_files[audio_id]
+    audio_entry = temp_audio_files[audio_id]
+    audio_bytes = audio_entry["data"]
 
     # Debug logging
-    print(f"Serving audio {audio_id}, size: {len(audio_bytes)} bytes")
+    logger.debug(f"Serving audio {audio_id}, size: {len(audio_bytes)} bytes")
 
     return StreamingResponse(
         io.BytesIO(audio_bytes),
