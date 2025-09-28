@@ -243,6 +243,7 @@ async def system_check():
         "recommendations": []
     }
 
+
     # Add recommendations based on status
     if not has_ai_cli:
         if not claude_code_status.get("installed") and not opencode_status.get("installed"):

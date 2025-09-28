@@ -4,6 +4,7 @@ import VideoPlayer from './VideoPlayer';
 import { ScriptData } from '../types/script';
 import { ApiService } from '../services/api';
 import './MainApp.css';
+import { env } from '@/common/env';
 
 function MainApp() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ function MainApp() {
 
   const checkSystemStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/system-check/quick');
+      const response = await fetch(`${env.apiUrl}/system-check/quick`);
       const data = await response.json();
 
       if (!data.system_ready) {
