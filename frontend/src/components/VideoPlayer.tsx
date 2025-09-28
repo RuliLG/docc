@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { ScriptData, VideoState, ScriptBlock } from '../types/script';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScriptData } from '../types/script';
 import { Play, Pause, SkipBack, SkipForward, Square, X } from 'lucide-react';
-import { AudioService } from '../services/audioService';
 import TextRenderer from './TextRenderer';
 import CodeRenderer from './CodeRenderer';
 import { Card, CardContent, CardDescription } from './ui/card';
@@ -12,6 +11,8 @@ import { Progress } from './ui/progress';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useVideoPlayer } from '../hooks/useVideoPlayer';
+import { useAudioControls } from '../hooks/useAudioControls';
 
 interface VideoPlayerProps {
   scriptData: ScriptData;
@@ -20,143 +21,70 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, onExit }) => {
-  const [videoState, setVideoState] = useState<VideoState>({
-    currentBlock: 0,
-    isPlaying: false,
-    isPaused: false,
-    playbackSpeed: 1.0
-  });
   const [autoPlay, setAutoPlay] = useState(true);
-  const [autoPlayDelay, setAutoPlayDelay] = useState('1000'); // 1 second delay between blocks
+  const [autoPlayDelay, setAutoPlayDelay] = useState(1000);
 
-  const [audioService] = useState(() => new AudioService());
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    currentBlockIndex,
+    currentBlock,
+    playbackSpeed,
+    shouldAutoPlay,
+    setPlaybackSpeed,
+    goToPrevious,
+    goToNext,
+    goToStart,
+    triggerAutoPlay,
+    clearAutoPlay,
+  } = useVideoPlayer({ scriptData });
+
+  const handleBlockComplete = useCallback(() => {
+    if (autoPlay && currentBlockIndex < scriptData.script.length - 1) {
+      setTimeout(() => {
+        goToNext();
+        triggerAutoPlay();
+      }, autoPlayDelay);
+    }
+  }, [autoPlay, currentBlockIndex, scriptData.script.length, autoPlayDelay, goToNext, triggerAutoPlay]);
+
+  const {
+    play,
+    pause,
+    stop,
+    isPlaying,
+    isPaused,
+    isLoading,
+    error,
+    setError,
+  } = useAudioControls({
+    scriptData,
+    currentBlock,
+    currentBlockIndex,
+    sessionFolder,
+    playbackSpeed,
+    onBlockComplete: handleBlockComplete,
+  });
 
   useEffect(() => {
-    // Set session folder on audio service if available
-    if (sessionFolder) {
-      audioService.setSessionFolder(sessionFolder);
+    if (shouldAutoPlay && !isPlaying) {
+      clearAutoPlay();
+      play();
     }
+  }, [shouldAutoPlay, isPlaying, clearAutoPlay, play]);
 
-    // Stop audio when component unmounts
-    return () => {
-      audioService.stopCurrentAudio();
-    };
-  }, [audioService, sessionFolder]);
+  const handleStop = useCallback(() => {
+    stop();
+    goToStart();
+  }, [stop, goToStart]);
 
-  useEffect(() => {
-    // Update playback speed when it changes
-    audioService.setPlaybackSpeed(videoState.playbackSpeed);
-  }, [videoState.playbackSpeed, audioService]);
+  const handlePrevious = useCallback(() => {
+    stop();
+    goToPrevious();
+  }, [stop, goToPrevious]);
 
-  useEffect(() => {
-    // Handle autoplay when flag is set
-    if (videoState.shouldAutoPlay && !videoState.isPlaying) {
-      setVideoState(prev => ({ ...prev, shouldAutoPlay: false }));
-      handlePlay();
-    }
-  }, [videoState.shouldAutoPlay, videoState.currentBlock]);
-
-  const getCurrentBlockText = (): string => {
-    const currentBlock = getCurrentBlock();
-    if (!currentBlock) return '';
-
-    return currentBlock.markdown;
-  };
-
-  const handlePlay = async () => {
-    const currentBlock = getCurrentBlock();
-    if (!currentBlock || videoState.isPlaying) return;
-
-    setIsAudioLoading(true);
-    setError(null);
-
-    try {
-      setVideoState(prev => ({ ...prev, isPlaying: true, isPaused: false }));
-
-      // Check if we have pre-generated audio URLs from the response
-      if (scriptData.audio_files && scriptData.audio_files[videoState.currentBlock]) {
-        const audioUrl = scriptData.audio_files[videoState.currentBlock];
-        await audioService.playAudioFromUrl(audioUrl, videoState.playbackSpeed);
-      } else {
-        // Check if we have a pre-generated audio file from session
-        const audioFile = (currentBlock as any).audio_file;
-        if (sessionFolder && audioFile) {
-          await audioService.playAudioFromSession(audioFile, videoState.playbackSpeed);
-        } else {
-          // Fallback to generating audio from text
-          const blockText = getCurrentBlockText();
-          await audioService.playAudio(blockText, videoState.playbackSpeed);
-        }
-      }
-
-      // Audio finished playing
-      setVideoState(prev => ({ ...prev, isPlaying: false, isPaused: false }));
-
-      // Auto-advance to next block if autoPlay is enabled
-      if (autoPlay && videoState.currentBlock < scriptData.script.length - 1) {
-        setTimeout(() => {
-          setVideoState(prev => ({
-            ...prev,
-            currentBlock: prev.currentBlock + 1,
-            shouldAutoPlay: true  // Flag to trigger autoplay in useEffect
-          }));
-        }, parseInt(autoPlayDelay));
-      }
-    } catch (err) {
-      setError(`Audio playback failed: ${err}`);
-      setVideoState(prev => ({ ...prev, isPlaying: false, isPaused: false }));
-    } finally {
-      setIsAudioLoading(false);
-    }
-  };
-
-  const handlePause = () => {
-    audioService.pauseCurrentAudio();
-    setVideoState(prev => ({ ...prev, isPlaying: false, isPaused: true }));
-  };
-
-  const handleStop = () => {
-    audioService.stopCurrentAudio();
-    setVideoState(prev => ({
-      ...prev,
-      isPlaying: false,
-      isPaused: false,
-      currentBlock: 0,
-      shouldAutoPlay: false
-    }));
-    setIsAudioLoading(false);
-    setError(null);
-  };
-
-  const handlePrevious = () => {
-    audioService.stopCurrentAudio();
-    setVideoState(prev => ({
-      ...prev,
-      currentBlock: Math.max(0, prev.currentBlock - 1),
-      isPlaying: false,
-      isPaused: false
-    }));
-    setIsAudioLoading(false);
-  };
-
-  const handleNext = () => {
-    audioService.stopCurrentAudio();
-    setVideoState(prev => ({
-      ...prev,
-      currentBlock: Math.min(scriptData.script.length - 1, prev.currentBlock + 1),
-      isPlaying: false,
-      isPaused: false
-    }));
-    setIsAudioLoading(false);
-  };
-
-  const getCurrentBlock = (): ScriptBlock | null => {
-    return scriptData.script[videoState.currentBlock] || null;
-  };
-
-  const currentBlock = getCurrentBlock();
+  const handleNext = useCallback(() => {
+    stop();
+    goToNext();
+  }, [stop, goToNext]);
 
   return (
     <div className="h-screen w-screen p-2 space-y-2 grid grid-rows-[auto_1fr_auto]">
@@ -199,16 +127,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
       <Card>
         <CardContent className="flex items-center gap-8">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handlePrevious} disabled={videoState.currentBlock === 0}>
+            <Button variant="outline" onClick={handlePrevious} disabled={currentBlockIndex === 0}>
               <SkipBack size={20} />
             </Button>
 
-            {videoState.isPlaying ? (
-              <Button onClick={handlePause} className="play-pause-btn">
+            {isPlaying ? (
+              <Button onClick={pause} className="play-pause-btn">
                 <Pause size={24} />
               </Button>
             ) : (
-              <Button onClick={handlePlay} className="play-pause-btn">
+              <Button onClick={play} className="play-pause-btn">
                 <Play size={24} />
               </Button>
             )}
@@ -217,23 +145,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
               <Square size={20} />
             </Button>
 
-            <Button variant="outline" onClick={handleNext} disabled={videoState.currentBlock === scriptData.script.length - 1}>
+            <Button variant="outline" onClick={handleNext} disabled={currentBlockIndex === scriptData.script.length - 1}>
               <SkipForward size={20} />
             </Button>
           </div>
 
           <div className="flex items-center gap-2 flex-1">
             <Label className="flex-shrink-0">
-              {videoState.currentBlock + 1} / {scriptData.script.length}
+              {currentBlockIndex + 1} / {scriptData.script.length}
             </Label>
-            <Progress value={((videoState.currentBlock + 1) / scriptData.script.length) * 100} />
+            <Progress value={((currentBlockIndex + 1) / scriptData.script.length) * 100} />
           </div>
 
           <div className="flex items-center gap-2">
-            <Select value={videoState.playbackSpeed.toString()} onValueChange={(value) => setVideoState(prev => ({
-              ...prev,
-              playbackSpeed: parseFloat(value)
-            }))}>
+            <Select
+              value={playbackSpeed.toString()}
+              onValueChange={(value) => setPlaybackSpeed(parseFloat(value))}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Speed" />
               </SelectTrigger>
@@ -263,7 +191,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
                 Delay:
                 <Select
                   value={autoPlayDelay.toString()}
-                  onValueChange={(value) => setAutoPlayDelay(value)}
+                  onValueChange={(value) => setAutoPlayDelay(parseInt(value, 10))}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Delay" />
