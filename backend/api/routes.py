@@ -9,6 +9,10 @@ from backend.models.tts import (
 from backend.core.script_generator import ScriptGenerator
 from backend.core.tts_manager import TTSManager
 from backend.api import system_check
+from backend.integrations.claude_provider import ClaudeProvider
+from backend.integrations.opencode_provider import OpenCodeProvider
+from backend.integrations.elevenlabs_provider import ElevenLabsProvider
+from backend.integrations.openai_tts_provider import OpenAITTSProvider
 import io
 import uuid
 from pathlib import Path
@@ -45,11 +49,14 @@ async def generate_script(request: ScriptRequest):
     try:
         script_generator = get_script_generator()
         script = await script_generator.generate(
-            repository_path=request.repository_path, question=request.question
+            repository_path=request.repository_path,
+            question=request.question,
+            ai_provider=request.ai_provider
         )
 
         # Pre-generate audio for all script blocks
-        tts_manager = get_tts_manager()
+        # Create a new TTSManager with the preferred provider
+        tts_manager = TTSManager(preferred_provider=request.tts_provider)
         audio_urls = []
 
         # Check if TTS is available
@@ -143,6 +150,38 @@ async def clear_cache():
 @router.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+@router.get("/available-providers")
+async def get_available_providers():
+    """
+    Get list of available AI and TTS providers.
+    Returns which providers are currently configured and available.
+    """
+    # Check AI providers
+    ai_providers = []
+    claude_provider = ClaudeProvider()
+    opencode_provider = OpenCodeProvider()
+
+    if claude_provider.is_available():
+        ai_providers.append({"id": "claude_code", "name": "Claude Code"})
+    if opencode_provider.is_available():
+        ai_providers.append({"id": "opencode", "name": "OpenCode"})
+
+    # Check TTS providers
+    tts_providers = []
+    elevenlabs_provider = ElevenLabsProvider()
+    openai_provider = OpenAITTSProvider()
+
+    if elevenlabs_provider.is_available():
+        tts_providers.append({"id": "elevenlabs", "name": "ElevenLabs"})
+    if openai_provider.is_available():
+        tts_providers.append({"id": "openai", "name": "OpenAI TTS"})
+
+    return {
+        "ai_providers": ai_providers,
+        "tts_providers": tts_providers
+    }
 
 
 @router.get("/file-content")

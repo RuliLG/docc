@@ -11,10 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class TTSManager:
-    def __init__(self, cache_dir: Optional[str] = None):
+    def __init__(self, cache_dir: Optional[str] = None, preferred_provider: Optional[str] = None):
         settings = get_settings()
 
         self.providers = [ElevenLabsProvider(), OpenAITTSProvider()]
+        self.preferred_provider = preferred_provider
 
         if cache_dir:
             self.cache_dir = Path(cache_dir)
@@ -32,7 +33,22 @@ class TTSManager:
             logger.warning("No TTS providers available")
 
     def _get_available_provider(self) -> Optional[TTSProvider]:
-        """Get the first available TTS provider."""
+        """Get the first available TTS provider based on preference."""
+        # If a preferred provider is specified, try to use it first
+        if self.preferred_provider:
+            provider_map = {
+                'elevenlabs': ElevenLabsProvider,
+                'openai': OpenAITTSProvider
+            }
+
+            if self.preferred_provider in provider_map:
+                for provider in self.providers:
+                    if isinstance(provider, provider_map[self.preferred_provider]) and provider.is_available():
+                        logger.info(f"Using preferred TTS provider: {self.preferred_provider}")
+                        return provider
+                logger.warning(f"Preferred provider {self.preferred_provider} not available, trying all")
+
+        # Fall back to first available provider
         for provider in self.providers:
             if provider.is_available():
                 return provider

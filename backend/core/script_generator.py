@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from typing import List, Union
+from typing import List, Union, Optional
 from backend.models.script import TextBlock, CodeBlock, LineRange
 from backend.integrations.ai_provider import AIProvider
 from backend.integrations.claude_provider import ClaudeProvider
@@ -21,13 +21,16 @@ class ScriptGenerator:
         self.system_prompt = self._load_system_prompt()
 
     async def generate(
-        self, repository_path: str, question: str
+        self, repository_path: str, question: str, ai_provider: Optional[str] = None
     ) -> List[Union[TextBlock, CodeBlock]]:
         prompt = self._build_prompt(repository_path, question)
 
+        # Filter providers based on user preference
+        providers_to_try = self._get_providers_to_try(ai_provider)
+
         # Try all available providers in order
         last_error = None
-        for i, provider in enumerate(self.providers):
+        for provider in providers_to_try:
             if not provider.is_available():
                 continue
 
@@ -134,3 +137,27 @@ Analyze this repository and provide a comprehensive answer to the question above
             "1. Install Claude Code CLI (recommended)\n"
             "2. Or install OpenCode CLI"
         )
+
+    def _get_providers_to_try(self, preferred_provider: Optional[str]) -> List[AIProvider]:
+        """Get list of providers to try based on user preference."""
+        if not preferred_provider:
+            return self.providers
+
+        # Map provider names to provider instances
+        provider_map = {
+            'claude_code': ClaudeProvider,
+            'opencode': OpenCodeProvider
+        }
+
+        if preferred_provider not in provider_map:
+            logger.warning(f"Unknown provider: {preferred_provider}, using all providers")
+            return self.providers
+
+        # Find the specific provider
+        for provider in self.providers:
+            if isinstance(provider, provider_map[preferred_provider]):
+                return [provider]
+
+        # If preferred provider not found, fall back to all
+        logger.warning(f"Preferred provider {preferred_provider} not available, trying all")
+        return self.providers

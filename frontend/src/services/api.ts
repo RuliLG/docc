@@ -1,5 +1,5 @@
 import { env } from '../common/env';
-import { CacheStatsResponse, ScriptData, ScriptRequest, TTSRequest, TTSResponse } from '../types/script';
+import { AvailableProvidersResponse, CacheStatsResponse, ScriptData, ScriptRequest, TTSRequest, TTSResponse } from '../types/script';
 
 export class ApiService {
   static async generateScript(request: ScriptRequest): Promise<ScriptData> {
@@ -69,6 +69,16 @@ export class ApiService {
 
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  static async getAvailableProviders(): Promise<AvailableProvidersResponse> {
+    const response = await fetch(`${env.apiUrl}/available-providers`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to get available providers: ${response.statusText}`);
     }
 
     return response.json();

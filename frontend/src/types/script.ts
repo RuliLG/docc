@@ -38,6 +38,18 @@ export interface VideoState {
 export interface ScriptRequest {
   repository_path: string;
   question: string;
+  ai_provider?: string;
+  tts_provider?: string;
+}
+
+export interface Provider {
+  id: string;
+  name: string;
+}
+
+export interface AvailableProvidersResponse {
+  ai_providers: Provider[];
+  tts_providers: Provider[];
 }
 
 export interface TTSRequest {

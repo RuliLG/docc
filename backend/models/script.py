@@ -25,6 +25,8 @@ class CodeBlock(BaseModel):
 class ScriptRequest(BaseModel):
     repository_path: str
     question: str
+    ai_provider: Optional[str] = None
+    tts_provider: Optional[str] = None
 
 
 class ScriptResponse(BaseModel):

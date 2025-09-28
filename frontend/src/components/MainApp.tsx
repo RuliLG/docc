@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
-import { ScriptData } from '../types/script';
+import { AvailableProvidersResponse, ScriptData } from '../types/script';
 import { ApiService } from '../services/api';
 import './MainApp.css';
 import { env } from '../common/env';
@@ -14,6 +14,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Textarea } from './ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
 
 function MainApp() {
   const navigate = useNavigate();
@@ -24,10 +28,14 @@ function MainApp() {
   const [repositoryPath, setRepositoryPath] = useState('');
   const [question, setQuestion] = useState('');
   const [systemReady, setSystemReady] = useState<boolean | null>(null);
+  const [availableProviders, setAvailableProviders] = useState<AvailableProvidersResponse | null>(null);
+  const [selectedAiProvider, setSelectedAiProvider] = useState<string>('');
+  const [selectedTtsProvider, setSelectedTtsProvider] = useState<string>('');
 
   useEffect(() => {
     // Check system status on mount
     checkSystemStatus();
+    loadAvailableProviders();
 
     const urlParams = new URLSearchParams(window.location.search);
     const sessionFolderParam = urlParams.get('session');
@@ -53,6 +61,15 @@ function MainApp() {
       console.error('Failed to check system status:', err);
       // If we can't check, redirect to system check
       navigate('/');
+    }
+  };
+
+  const loadAvailableProviders = async () => {
+    try {
+      const providers = await ApiService.getAvailableProviders();
+      setAvailableProviders(providers);
+    } catch (err) {
+      console.error('Failed to load available providers:', err);
     }
   };
 
@@ -91,7 +108,9 @@ function MainApp() {
 
       const script = await ApiService.generateScript({
         repository_path: repositoryPath,
-        question: question
+        question: question,
+        ai_provider: selectedAiProvider === 'auto' ? undefined : selectedAiProvider,
+        tts_provider: selectedTtsProvider === 'auto' ? undefined : selectedTtsProvider
       });
 
       setScriptData(script);
@@ -172,6 +191,57 @@ function MainApp() {
               required
             />
           </div>
+
+          {availableProviders && (availableProviders.ai_providers.length > 1 || availableProviders.tts_providers.length > 1) && (
+            <Collapsible>
+              <CollapsibleTrigger className="w-full">
+                <Button type="button" variant="outline" className="w-full">Advanced Settings <ChevronDown /></Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-4">
+                <Card >
+                  <CardContent>
+                    {availableProviders.ai_providers.length > 1 && (
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="aiProvider">AI Provider (optional):</Label>
+                        <Select value={selectedAiProvider} onValueChange={setSelectedAiProvider}>
+                          <SelectTrigger id="aiProvider" className="w-full">
+                            <SelectValue placeholder="Auto-select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto-select</SelectItem>
+                            {availableProviders.ai_providers.map((provider) => (
+                              <SelectItem key={provider.id} value={provider.id}>
+                                {provider.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    {availableProviders.tts_providers.length > 1 && (
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor="ttsProvider">Text-to-Speech Provider (optional):</Label>
+                        <Select value={selectedTtsProvider} onValueChange={setSelectedTtsProvider}>
+                          <SelectTrigger id="ttsProvider" className="w-full">
+                            <SelectValue placeholder="Auto-select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto-select</SelectItem>
+                            {availableProviders.tts_providers.map((provider) => (
+                              <SelectItem key={provider.id} value={provider.id}>
+                                {provider.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
           <Button type="submit" disabled={loading}>
             {loading ? 'Generating...' : 'Generate Documentation'}
           </Button>
