@@ -1,10 +1,13 @@
 import os
 from backend.integrations.tts_provider import TTSProvider
+
 try:
     from elevenlabs import ElevenLabs
-    ELEVENLABS_AVAILABLE=True
+
+    ELEVENLABS_AVAILABLE = True
 except:
-    ELEVENLABS_AVAILABLE=False
+    ELEVENLABS_AVAILABLE = False
+
 
 class ElevenLabsProvider(TTSProvider):
     def __init__(self):
@@ -15,16 +18,16 @@ class ElevenLabsProvider(TTSProvider):
 
     async def generate_speech(self, text: str) -> bytes:
         if not self.is_available():
-            raise RuntimeError("ElevenLabs API key not available or library not installed")
+            raise RuntimeError(
+                "ElevenLabs API key not available or library not installed"
+            )
 
         try:
             audio_generator = self.client.text_to_speech.convert(
-                text=text,
-                voice_id=self.default_voice,
-                model_id=self.default_model
+                text=text, voice_id=self.default_voice, model_id=self.default_model
             )
 
-            audio_bytes = b''.join(chunk for chunk in audio_generator)
+            audio_bytes = b"".join(chunk for chunk in audio_generator)
             return audio_bytes
         except Exception as e:
             raise RuntimeError(f"ElevenLabs TTS failed: {str(e)}")

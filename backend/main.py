@@ -7,6 +7,7 @@ from backend.core.config import get_settings
 
 API_VERSION = "1.0.0"
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan context manager."""

@@ -26,10 +26,12 @@ class OpenCodeProvider(AIProvider):
                 cmd = [
                     self.opencode_command,
                     "run",
-                    prompt  # The prompt includes both system prompt and question
+                    prompt,  # The prompt includes both system prompt and question
                 ]
 
-                logger.info(f"Attempt {attempt + 1}/{max_retries}: Running OpenCode CLI...")
+                logger.info(
+                    f"Attempt {attempt + 1}/{max_retries}: Running OpenCode CLI..."
+                )
 
                 result = subprocess.run(
                     cmd,
@@ -37,34 +39,42 @@ class OpenCodeProvider(AIProvider):
                     text=True,
                     check=True,
                     cwd=repository_path,  # Run from within the repo directory
-                    timeout=120  # 2 minute timeout
+                    timeout=120,  # 2 minute timeout
                 )
 
                 output = result.stdout.strip()
 
                 # Check if we got empty output
                 if not output:
-                    logger.warning(f"Attempt {attempt + 1}: OpenCode returned empty response")
+                    logger.warning(
+                        f"Attempt {attempt + 1}: OpenCode returned empty response"
+                    )
                     if attempt < max_retries - 1:
                         time.sleep(retry_delay)
                         continue
                     else:
-                        raise RuntimeError("OpenCode returned empty response after all retries")
+                        raise RuntimeError(
+                            "OpenCode returned empty response after all retries"
+                        )
 
                 # Try to find JSON in the output
                 # OpenCode might return plain text, so we look for JSON array
-                json_start = output.find('[')
-                json_end = output.rfind(']')
+                json_start = output.find("[")
+                json_end = output.rfind("]")
 
                 if json_start != -1 and json_end != -1 and json_end > json_start:
-                    json_str = output[json_start:json_end + 1]
+                    json_str = output[json_start : json_end + 1]
                     try:
                         # Validate it's proper JSON
                         json.loads(json_str)
-                        logger.info(f"Successfully extracted JSON from OpenCode response")
+                        logger.info(
+                            f"Successfully extracted JSON from OpenCode response"
+                        )
                         return json_str
                     except json.JSONDecodeError:
-                        logger.warning("Failed to parse extracted JSON, returning full output")
+                        logger.warning(
+                            "Failed to parse extracted JSON, returning full output"
+                        )
                         return output
 
                 # If no JSON array found, return the entire output
@@ -106,7 +116,7 @@ class OpenCodeProvider(AIProvider):
                 [self.opencode_command, "--help"],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
             return result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):

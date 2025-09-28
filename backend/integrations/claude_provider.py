@@ -28,11 +28,14 @@ class ClaudeProvider(AIProvider):
                 cmd = [
                     self.claude_command,
                     "--print",  # Print response and exit
-                    "--output-format", "text",  # Use text format
-                    prompt  # The prompt includes both system prompt and question
+                    "--output-format",
+                    "text",  # Use text format
+                    prompt,  # The prompt includes both system prompt and question
                 ]
 
-                logger.info(f"Attempt {attempt + 1}/{max_retries}: Running Claude CLI...")
+                logger.info(
+                    f"Attempt {attempt + 1}/{max_retries}: Running Claude CLI..."
+                )
 
                 result = subprocess.run(
                     cmd,
@@ -40,7 +43,7 @@ class ClaudeProvider(AIProvider):
                     text=True,
                     check=True,
                     cwd=repository_path,  # Run from within the repo directory
-                    timeout=120  # 2 minute timeout
+                    timeout=120,  # 2 minute timeout
                 )
 
                 # Claude CLI returns plain text by default
@@ -49,27 +52,33 @@ class ClaudeProvider(AIProvider):
 
                 # Check if we got empty output
                 if not output:
-                    logger.warning(f"Attempt {attempt + 1}: Claude returned empty response")
+                    logger.warning(
+                        f"Attempt {attempt + 1}: Claude returned empty response"
+                    )
                     if attempt < max_retries - 1:
                         time.sleep(retry_delay)
                         continue
                     else:
-                        raise RuntimeError("Claude returned empty response after all retries")
+                        raise RuntimeError(
+                            "Claude returned empty response after all retries"
+                        )
 
                 # Try to find JSON in the output
                 # Look for array brackets that indicate our expected format
-                json_start = output.find('[')
-                json_end = output.rfind(']')
+                json_start = output.find("[")
+                json_end = output.rfind("]")
 
                 if json_start != -1 and json_end != -1 and json_end > json_start:
-                    json_str = output[json_start:json_end + 1]
+                    json_str = output[json_start : json_end + 1]
                     try:
                         # Validate it's proper JSON
                         json.loads(json_str)
                         logger.info(f"Successfully extracted JSON from Claude response")
                         return json_str
                     except json.JSONDecodeError:
-                        logger.warning("Failed to parse extracted JSON, returning full output")
+                        logger.warning(
+                            "Failed to parse extracted JSON, returning full output"
+                        )
                         # If JSON is malformed, return the whole output
                         return output
 
@@ -98,9 +107,7 @@ class ClaudeProvider(AIProvider):
         try:
             # Check if claude command exists
             result = subprocess.run(
-                [self.claude_command, "--version"],
-                capture_output=True,
-                text=True
+                [self.claude_command, "--version"], capture_output=True, text=True
             )
             return result.returncode == 0
         except FileNotFoundError:

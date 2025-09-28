@@ -3,11 +3,11 @@ from pydantic import BaseModel, Field
 
 
 class LineRange(BaseModel):
-    from_line: Optional[int] = Field(None, alias='from')
-    to_line: Optional[int] = Field(None, alias='to')
+    from_line: Optional[int] = Field(None, alias="from")
+    to_line: Optional[int] = Field(None, alias="to")
     line: Optional[int] = None
-    
-    model_config = {'populate_by_name': True}
+
+    model_config = {"populate_by_name": True}
 
 
 class TextBlock(BaseModel):

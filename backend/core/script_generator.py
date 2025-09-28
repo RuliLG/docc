@@ -14,8 +14,8 @@ class ScriptGenerator:
     def __init__(self):
         # Order providers by preference
         self.providers = [
-            ClaudeProvider(),      # Primary: Claude Code CLI
-            OpenCodeProvider()     # Fallback: OpenCode CLI
+            ClaudeProvider(),  # Primary: Claude Code CLI
+            OpenCodeProvider(),  # Fallback: OpenCode CLI
         ]
         self.ai_provider = self._get_available_provider()
         self.system_prompt = self._load_system_prompt()
@@ -56,20 +56,19 @@ class ScriptGenerator:
 
         # If we get here, all providers failed
         if last_error:
-            raise RuntimeError(f"All AI providers failed. Last error: {str(last_error)}")
+            raise RuntimeError(
+                f"All AI providers failed. Last error: {str(last_error)}"
+            )
         else:
             raise RuntimeError("No AI providers are available")
 
     def _load_system_prompt(self) -> str:
         """Load the system prompt from the prompts file."""
         prompt_path = os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "prompts",
-            "repository_analyzer.md"
+            os.path.dirname(__file__), "..", "prompts", "repository_analyzer.md"
         )
         try:
-            with open(prompt_path, 'r') as f:
+            with open(prompt_path, "r") as f:
                 return f.read()
         except FileNotFoundError:
             # Fallback to embedded prompt if file not found
@@ -138,19 +137,20 @@ Analyze this repository and provide a comprehensive answer to the question above
             "2. Or install OpenCode CLI"
         )
 
-    def _get_providers_to_try(self, preferred_provider: Optional[str]) -> List[AIProvider]:
+    def _get_providers_to_try(
+        self, preferred_provider: Optional[str]
+    ) -> List[AIProvider]:
         """Get list of providers to try based on user preference."""
         if not preferred_provider:
             return self.providers
 
         # Map provider names to provider instances
-        provider_map = {
-            'claude_code': ClaudeProvider,
-            'opencode': OpenCodeProvider
-        }
+        provider_map = {"claude_code": ClaudeProvider, "opencode": OpenCodeProvider}
 
         if preferred_provider not in provider_map:
-            logger.warning(f"Unknown provider: {preferred_provider}, using all providers")
+            logger.warning(
+                f"Unknown provider: {preferred_provider}, using all providers"
+            )
             return self.providers
 
         # Find the specific provider
@@ -159,5 +159,7 @@ Analyze this repository and provide a comprehensive answer to the question above
                 return [provider]
 
         # If preferred provider not found, fall back to all
-        logger.warning(f"Preferred provider {preferred_provider} not available, trying all")
+        logger.warning(
+            f"Preferred provider {preferred_provider} not available, trying all"
+        )
         return self.providers

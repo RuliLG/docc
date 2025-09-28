@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
 
     # CORS settings
-    docc_cors_origins: List[str] = ["http://localhost:3000"]
+    docc_cors_origins: Optional[List[str]] = None
 
     # Security
     secret_key: str = "default-secret-key-change-in-production"
@@ -46,14 +46,16 @@ class Settings(BaseSettings):
     @field_validator("docc_cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v):
-        if v is None:
+        if v is None or v == "":
             return ["http://localhost:3000"]
         if isinstance(v, str) and v.strip():
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, str) and not v.strip():
             # Empty string, use default
             return ["http://localhost:3000"]
-        return v
+        elif isinstance(v, list):
+            return v if v else ["http://localhost:3000"]
+        return ["http://localhost:3000"]
 
     @field_validator("log_level")
     @classmethod

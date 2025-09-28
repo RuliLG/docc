@@ -58,7 +58,8 @@ def _cleanup_old_audio_files():
 
     # Remove expired files
     expired_keys = [
-        audio_id for audio_id, entry in temp_audio_files.items()
+        audio_id
+        for audio_id, entry in temp_audio_files.items()
         if current_time - entry["timestamp"] > AUDIO_FILE_TTL
     ]
     for key in expired_keys:
@@ -79,7 +80,7 @@ async def generate_script(request: ScriptRequest):
         script = await script_generator.generate(
             repository_path=request.repository_path,
             question=request.question,
-            ai_provider=request.ai_provider
+            ai_provider=request.ai_provider,
         )
 
         # Pre-generate audio for all script blocks
@@ -102,7 +103,9 @@ async def generate_script(request: ScriptRequest):
             # Validate audio data
             if not audio_bytes or len(audio_bytes) == 0:
                 logger.warning(f"Empty audio generated for block {i}")
-                raise HTTPException(status_code=500, detail=f"Failed to generate audio for block {i}")
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to generate audio for block {i}"
+                )
 
             # Generate unique ID for this audio
             audio_id = str(uuid.uuid4())
@@ -122,9 +125,7 @@ async def generate_script(request: ScriptRequest):
 async def generate_audio(request: TTSRequest):
     try:
         tts_manager = get_tts_manager()
-        audio_bytes = await tts_manager.generate_or_get_cached_audio(
-            text=request.text
-        )
+        audio_bytes = await tts_manager.generate_or_get_cached_audio(text=request.text)
 
         # Generate unique ID for this audio
         audio_id = str(uuid.uuid4())
@@ -209,10 +210,7 @@ async def get_available_providers():
     if openai_provider.is_available():
         tts_providers.append({"id": "openai", "name": "OpenAI TTS"})
 
-    return {
-        "ai_providers": ai_providers,
-        "tts_providers": tts_providers
-    }
+    return {"ai_providers": ai_providers, "tts_providers": tts_providers}
 
 
 @router.get("/file-content")
@@ -232,7 +230,7 @@ async def get_file_content(file_path: str, from_line: int = None, to_line: int =
 
         # Read the file
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
@@ -248,10 +246,10 @@ async def get_file_content(file_path: str, from_line: int = None, to_line: int =
 
         return {
             "file_path": str(path),
-            "content": ''.join(filtered_lines),
+            "content": "".join(filtered_lines),
             "total_lines": len(lines),
             "from_line": from_line,
-            "to_line": to_line
+            "to_line": to_line,
         }
 
     except HTTPException:

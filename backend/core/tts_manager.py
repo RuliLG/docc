@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class TTSManager:
-    def __init__(self, cache_dir: Optional[str] = None, preferred_provider: Optional[str] = None):
+    def __init__(
+        self, cache_dir: Optional[str] = None, preferred_provider: Optional[str] = None
+    ):
         settings = get_settings()
 
         self.providers = [ElevenLabsProvider(), OpenAITTSProvider()]
@@ -37,16 +39,23 @@ class TTSManager:
         # If a preferred provider is specified, try to use it first
         if self.preferred_provider:
             provider_map = {
-                'elevenlabs': ElevenLabsProvider,
-                'openai': OpenAITTSProvider
+                "elevenlabs": ElevenLabsProvider,
+                "openai": OpenAITTSProvider,
             }
 
             if self.preferred_provider in provider_map:
                 for provider in self.providers:
-                    if isinstance(provider, provider_map[self.preferred_provider]) and provider.is_available():
-                        logger.info(f"Using preferred TTS provider: {self.preferred_provider}")
+                    if (
+                        isinstance(provider, provider_map[self.preferred_provider])
+                        and provider.is_available()
+                    ):
+                        logger.info(
+                            f"Using preferred TTS provider: {self.preferred_provider}"
+                        )
                         return provider
-                logger.warning(f"Preferred provider {self.preferred_provider} not available, trying all")
+                logger.warning(
+                    f"Preferred provider {self.preferred_provider} not available, trying all"
+                )
 
         # Fall back to first available provider
         for provider in self.providers:
@@ -63,9 +72,7 @@ class TTSManager:
         """Get the full cache file path."""
         return self.cache_dir / filename
 
-    async def generate_or_get_cached_audio(
-        self, text: str
-    ) -> bytes:
+    async def generate_or_get_cached_audio(self, text: str) -> bytes:
         """Generate audio or return cached version if available."""
         if not self.provider:
             raise RuntimeError(

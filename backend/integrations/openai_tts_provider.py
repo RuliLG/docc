@@ -17,9 +17,7 @@ class OpenAITTSProvider(TTSProvider):
 
         try:
             response = openai.audio.speech.create(
-                model=self.default_model,
-                voice=self.default_voice,
-                input=text
+                model=self.default_model, voice=self.default_voice, input=text
             )
 
             return response.content
