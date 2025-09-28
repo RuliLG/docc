@@ -4,7 +4,14 @@ import { Play, Pause, SkipBack, SkipForward, Square, X } from 'lucide-react';
 import { AudioService } from '../services/audioService';
 import TextRenderer from './TextRenderer';
 import CodeRenderer from './CodeRenderer';
-import './VideoPlayer.css';
+import { Card, CardContent, CardDescription } from './ui/card';
+import TitleH1 from './ui/TitleH1';
+import { Button } from './ui/button';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Progress } from './ui/progress';
+import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface VideoPlayerProps {
   scriptData: ScriptData;
@@ -20,7 +27,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
     playbackSpeed: 1.0
   });
   const [autoPlay, setAutoPlay] = useState(true);
-  const [autoPlayDelay, setAutoPlayDelay] = useState(1000); // 1 second delay between blocks
+  const [autoPlayDelay, setAutoPlayDelay] = useState('1000'); // 1 second delay between blocks
 
   const [audioService] = useState(() => new AudioService());
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -95,7 +102,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
             currentBlock: prev.currentBlock + 1,
             shouldAutoPlay: true  // Flag to trigger autoplay in useEffect
           }));
-        }, autoPlayDelay);
+        }, parseInt(autoPlayDelay));
       }
     } catch (err) {
       setError(`Audio playback failed: ${err}`);
@@ -152,123 +159,128 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
   const currentBlock = getCurrentBlock();
 
   return (
-    <div className="video-player">
-      <div className="video-header">
-        <div className="header-content">
-          <h2>{scriptData.question}</h2>
-          <p className="repository-path">Repository: {scriptData.repository_path}</p>
-        </div>
-        {onExit && (
-          <button className="exit-button" onClick={onExit} title="Exit and return to form">
-            <X size={24} />
-          </button>
-        )}
-      </div>
-
-      <div className="video-content">
-        {error && (
-          <div className="error-banner">
-            <p>{error}</p>
-            <button onClick={() => setError(null)}>×</button>
+    <div className="h-screen w-screen p-2 space-y-2 grid grid-rows-[auto_1fr_auto]">
+      <Card>
+        <CardContent className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
+            <TitleH1>{scriptData.question}</TitleH1>
+            <CardDescription className="repository-path">Repository: {scriptData.repository_path}</CardDescription>
           </div>
-        )}
+          {onExit && (
+            <Button variant="outline" onClick={onExit} title="Exit and return to form">
+              <X size={24} />
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
-        {currentBlock && (
-          <div className="block-container">
-            {currentBlock.type === 'text' ? (
-              <TextRenderer block={currentBlock} />
+      <Card className="overflow-y-auto">
+        <CardContent>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+              <Button className="absolute top-2 right-2" variant="outline" onClick={() => setError(null)}><X size={20} /></Button>
+            </Alert>
+          )}
+
+          {currentBlock && (
+            <div className="block-container">
+              {currentBlock.type === 'text' ? (
+                <TextRenderer block={currentBlock} />
+              ) : (
+                <CodeRenderer block={currentBlock} />
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="flex items-center gap-8">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handlePrevious} disabled={videoState.currentBlock === 0}>
+              <SkipBack size={20} />
+            </Button>
+
+            {videoState.isPlaying ? (
+              <Button onClick={handlePause} className="play-pause-btn" disabled={isAudioLoading}>
+                <Pause size={24} />
+              </Button>
             ) : (
-              <CodeRenderer block={currentBlock} />
+              <Button onClick={handlePlay} className="play-pause-btn" disabled={isAudioLoading}>
+                {isAudioLoading ? '...' : <Play size={24} />}
+              </Button>
+            )}
+
+            <Button variant="destructive" onClick={handleStop}>
+              <Square size={20} />
+            </Button>
+
+            <Button variant="outline" onClick={handleNext} disabled={videoState.currentBlock === scriptData.script.length - 1}>
+              <SkipForward size={20} />
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2 flex-1">
+            <Label className="flex-shrink-0">
+              {videoState.currentBlock + 1} / {scriptData.script.length}
+            </Label>
+            <Progress value={((videoState.currentBlock + 1) / scriptData.script.length) * 100} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Select value={videoState.playbackSpeed.toString()} onValueChange={(value) => setVideoState(prev => ({
+              ...prev,
+              playbackSpeed: parseFloat(value)
+            }))}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Speed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.5">0.5x</SelectItem>
+                <SelectItem value="1.0">1.0x</SelectItem>
+                <SelectItem value="1.25">1.25x</SelectItem>
+                <SelectItem value="1.5">1.5x</SelectItem>
+                <SelectItem value="2.0">2.0x</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Label>
+              <Input
+                type="checkbox"
+                id="auto-play-control"
+                className="h-4 w-4"
+                checked={autoPlay}
+                onChange={(e) => setAutoPlay(e.target.checked)}
+              />
+              Auto-play
+            </Label>
+            {autoPlay && (
+              <Label>
+                Delay:
+                <Select
+                  value={autoPlayDelay.toString()}
+                  onValueChange={(value) => setAutoPlayDelay(value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Delay" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No delay</SelectItem>
+                    <SelectItem value="500">0.5s</SelectItem>
+                    <SelectItem value="1000">1s</SelectItem>
+                    <SelectItem value="2000">2s</SelectItem>
+                    <SelectItem value="3000">3s</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Label>
             )}
           </div>
-        )}
-      </div>
-
-      <div className="video-controls">
-        <div className="control-buttons">
-          <button onClick={handlePrevious} disabled={videoState.currentBlock === 0}>
-            <SkipBack size={20} />
-          </button>
-
-          {videoState.isPlaying ? (
-            <button onClick={handlePause} className="play-pause-btn" disabled={isAudioLoading}>
-              <Pause size={24} />
-            </button>
-          ) : (
-            <button onClick={handlePlay} className="play-pause-btn" disabled={isAudioLoading}>
-              {isAudioLoading ? '...' : <Play size={24} />}
-            </button>
-          )}
-
-          <button onClick={handleStop}>
-            <Square size={20} />
-          </button>
-
-          <button
-            onClick={handleNext}
-            disabled={videoState.currentBlock === scriptData.script.length - 1}
-          >
-            <SkipForward size={20} />
-          </button>
-        </div>
-
-        <div className="progress-info">
-          <span className="block-counter">
-            {videoState.currentBlock + 1} / {scriptData.script.length}
-          </span>
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{
-                width: `${((videoState.currentBlock + 1) / scriptData.script.length) * 100}%`
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="speed-control">
-          <label>Speed: </label>
-          <select
-            value={videoState.playbackSpeed}
-            onChange={(e) => setVideoState(prev => ({
-              ...prev,
-              playbackSpeed: parseFloat(e.target.value)
-            }))}
-          >
-            <option value={0.5}>0.5x</option>
-            <option value={1.0}>1.0x</option>
-            <option value={1.25}>1.25x</option>
-            <option value={1.5}>1.5x</option>
-            <option value={2.0}>2.0x</option>
-          </select>
-        </div>
-
-        <div className="auto-play-control">
-          <label>
-            <input
-              type="checkbox"
-              checked={autoPlay}
-              onChange={(e) => setAutoPlay(e.target.checked)}
-            />
-            Auto-play
-          </label>
-          {autoPlay && (
-            <label className="delay-control">
-              Delay:
-              <select
-                value={autoPlayDelay}
-                onChange={(e) => setAutoPlayDelay(parseInt(e.target.value))}
-              >
-                <option value={0}>No delay</option>
-                <option value={500}>0.5s</option>
-                <option value={1000}>1s</option>
-                <option value={2000}>2s</option>
-                <option value={3000}>3s</option>
-              </select>
-            </label>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
