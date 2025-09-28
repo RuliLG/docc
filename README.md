@@ -94,6 +94,52 @@ This script will:
    # Edit .env file with your API keys
    ```
 
+### Docker Setup
+
+The project includes Docker configurations for both development and production:
+
+#### Development with Docker
+
+```bash
+# Build and run with hot-reload
+docker compose up
+
+# The services will be available at:
+# - Backend: http://localhost:8000
+# - Frontend: http://localhost:3000
+```
+
+#### Production with Docker
+
+```bash
+# Build and run production version
+docker compose -f docker-compose.prod.yml up
+```
+
+#### Accessing Local Repositories from Docker
+
+By default, your home directory is mounted into the container at `/host/home`. When specifying repository paths in the app:
+
+- Local path: `/Users/yourusername/projects/myrepo`
+- Docker path: `/host/home/projects/myrepo`
+
+To customize volume mounts:
+
+1. Copy the override example:
+   ```bash
+   cp docker-compose.override.yml.example docker-compose.override.yml
+   ```
+
+2. Edit `docker-compose.override.yml` to mount specific directories:
+   ```yaml
+   services:
+     backend:
+       volumes:
+         - /path/to/your/projects:/repositories:ro
+   ```
+
+3. Use the mounted path in the app (e.g., `/repositories/myproject`)
+
 ### AI Provider Configuration
 
 Choose one of the following:

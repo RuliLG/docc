@@ -92,6 +92,7 @@ dmypy.json
 
 # Docker
 .docker/
+docker-compose.override.yml
 
 # Database (for future features)
 *.db

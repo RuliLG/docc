@@ -22,6 +22,11 @@ services:
       - ./shared:/app/shared
       - audio_cache:/app/audio_cache
       - logs:/app/logs
+      # Mount user's home directory to access repositories
+      # Users can access repos via /host/home/[username]/path/to/repo
+      - ${HOME}:/host/home:ro
+      # Alternative: mount specific repositories directory
+      # - ~/repositories:/repositories:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]

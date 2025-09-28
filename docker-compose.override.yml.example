@@ -1,0 +1,23 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml and customize the paths
+# docker-compose.override.yml is automatically loaded by Docker Compose
+
+version: '3.8'
+
+services:
+  backend:
+    volumes:
+      # Option 1: Mount specific repository directories
+      # - /path/to/your/projects:/repositories:ro
+      # - /Users/yourusername/GitHub:/github:ro
+
+      # Option 2: Mount your entire home directory (already configured in main file)
+      # Comment out the ${HOME} line in docker-compose.yml if you want to use custom paths
+
+      # Option 3: Mount individual repositories
+      # - /Users/yourusername/myproject1:/repositories/myproject1:ro
+      # - /Users/yourusername/myproject2:/repositories/myproject2:ro
+
+    environment:
+      # You can also override environment variables here
+      # - REPOSITORY_BASE_PATH=/repositories
