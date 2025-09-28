@@ -2,10 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardAction, CardContent, CardTitle } from '../components/ui/card';
 import Loading from './SystemCheck/Loading';
-import ErrorScreen from './SystemCheck/ErrorScreen';
+import ErrorScreen from './ErrorScreen';
 import ServiceStatus from './SystemCheck/ServiceStatus';
 import { Button } from './ui/button';
 import { useSystemCheck } from '../hooks/useSystemCheck';
+import TitleH2 from './ui/TitleH2';
 
 const SystemCheck: React.FC = () => {
   const navigate = useNavigate();
@@ -19,12 +20,12 @@ const SystemCheck: React.FC = () => {
 
   if (error) {
     return (
-      <ErrorScreen error={error} />
+      <ErrorScreen error={error} title="There was an error checking system requirements" />
     );
   }
 
   if (!checkStatus) {
-    return <ErrorScreen error="The check was not performed. Please, refresh the page and try again." />;
+    return <ErrorScreen error="The check was not performed. Please, refresh the page and try again." title="There was an error checking system requirements" />;
   }
 
   return (
@@ -35,7 +36,7 @@ const SystemCheck: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium">AI CLI Tools</h2>
+              <TitleH2>AI CLI Tools</TitleH2>
               <span className={`text-sm ${checkStatus.requirements_met.ai_cli ? 'text-primary' : 'text-destructive'}`}>
                 {checkStatus.requirements_met.ai_cli ? 'Available' : 'Not available'}
               </span>
@@ -56,7 +57,7 @@ const SystemCheck: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium">Text-to-Speech Services</h2>
+              <TitleH2>Text-to-Speech Services</TitleH2>
               <span className={`text-sm ${checkStatus.requirements_met.tts_service ? 'text-primary' : 'text-destructive'}`}>
                 {checkStatus.requirements_met.tts_service ? 'Available' : 'Not available'}
               </span>

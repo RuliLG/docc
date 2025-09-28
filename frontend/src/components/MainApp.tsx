@@ -5,6 +5,15 @@ import { ScriptData } from '../types/script';
 import { ApiService } from '../services/api';
 import './MainApp.css';
 import { env } from '../common/env';
+import SystemCheckLoading from './SystemCheck/Loading';
+import ErrorScreen from './ErrorScreen';
+import { Button } from './ui/button';
+import Loading from './Loading';
+import TitleH1 from './ui/TitleH1';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Textarea } from './ui/textarea';
 
 function MainApp() {
   const navigate = useNavigate();
@@ -111,81 +120,75 @@ function MainApp() {
   // Wait for system check
   if (systemReady === null) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Checking system status...</p>
-      </div>
+      <SystemCheckLoading />
     );
   }
 
   if (loading) {
     return (
-      <div className="App loading">
-        <div className="loading-spinner"></div>
-        <p>Loading script...</p>
-      </div>
+      <Loading title="Loading script" description="The AI agent is now going through the app and generating the documentation for you. This process may take a few minutes..." />
     );
   }
 
   if (error) {
     return (
-      <div className="App error">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={handleCheckSystem} className="system-check-button">
+      <ErrorScreen error={error} title="Error">
+        <Button onClick={handleCheckSystem}>
           Check System Requirements
-        </button>
-      </div>
+        </Button>
+      </ErrorScreen>
     );
   }
 
   if (!scriptData && !sessionFolder) {
     return (
-      <div className="App">
-        <div className="form-container">
-          <h1>Documentation Generator</h1>
-          <button onClick={handleCheckSystem} className="system-status-button">
+      <div className="max-w-2xl mx-auto min-h-screen flex items-center justify-center flex-col gap-4">
+        <div className="flex justify-between items-center w-full">
+          <TitleH1>Ask any question about a repository</TitleH1>
+          <Button variant='outline' onClick={handleCheckSystem}>
             Check System Status
-          </button>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="repositoryPath">Repository Path:</label>
-              <input
-                type="text"
-                id="repositoryPath"
-                value={repositoryPath}
-                onChange={(e) => setRepositoryPath(e.target.value)}
-                placeholder="/path/to/repository"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="question">Question:</label>
-              <textarea
-                id="question"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="What would you like to know about this repository?"
-                rows={4}
-                required
-              />
-            </div>
-            <button type="submit" disabled={loading}>
-              {loading ? 'Generating...' : 'Generate Documentation'}
-            </button>
-            {error && <div className="error-message">{error}</div>}
-          </form>
+          </Button>
         </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor="repositoryPath">Repository Path:</Label>
+            <Input
+              type="text"
+              id="repositoryPath"
+              value={repositoryPath}
+              onChange={(e) => setRepositoryPath(e.target.value)}
+              placeholder="/absolute/path/to/repository"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2 w-full">
+            <Label htmlFor='question'>Question:</Label>
+            <Textarea
+              id="question"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="What would you like to know about this repository?"
+              rows={4}
+              required
+            />
+          </div>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Generating...' : 'Generate Documentation'}
+          </Button>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </form>
       </div>
     );
   }
 
   if (!scriptData) {
     return (
-      <div className="App error">
-        <h2>No Script Data</h2>
-        <p>No script data available</p>
-      </div>
+      <ErrorScreen error="No script data available" title="Error" />
     );
   }
 
