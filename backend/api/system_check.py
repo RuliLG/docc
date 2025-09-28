@@ -1,10 +1,12 @@
-import subprocess
-import os
-from typing import Dict, Any, Optional
-from fastapi import APIRouter
-from backend.core.config import get_settings
-import httpx
 import asyncio
+import os
+import subprocess
+from typing import Any, Dict, Optional
+
+import httpx
+from fastapi import APIRouter
+
+from backend.core.config import get_settings
 
 router = APIRouter()
 

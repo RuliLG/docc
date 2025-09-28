@@ -1,25 +1,23 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
-from backend.models.script import ScriptRequest, ScriptResponse
-from backend.models.tts import (
-    TTSRequest,
-    TTSResponse,
-    CacheStatsResponse,
-)
-from backend.core.script_generator import ScriptGenerator
-from backend.core.tts_manager import TTSManager
-from backend.core.config import get_settings
-from backend.api import system_check
-from backend.integrations.claude_provider import ClaudeProvider
-from backend.integrations.opencode_provider import OpenCodeProvider
-from backend.integrations.elevenlabs_provider import ElevenLabsProvider
-from backend.integrations.openai_tts_provider import OpenAITTSProvider
 import io
-import uuid
 import logging
 import time
-from pathlib import Path
+import uuid
 from collections import OrderedDict
+from pathlib import Path
+
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+
+from backend.api import system_check
+from backend.core.config import get_settings
+from backend.core.script_generator import ScriptGenerator
+from backend.core.tts_manager import TTSManager
+from backend.integrations.claude_provider import ClaudeProvider
+from backend.integrations.elevenlabs_provider import ElevenLabsProvider
+from backend.integrations.openai_tts_provider import OpenAITTSProvider
+from backend.integrations.opencode_provider import OpenCodeProvider
+from backend.models.script import ScriptRequest, ScriptResponse
+from backend.models.tts import CacheStatsResponse, TTSRequest, TTSResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

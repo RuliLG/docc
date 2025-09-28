@@ -2,10 +2,11 @@ import hashlib
 import logging
 from pathlib import Path
 from typing import Optional
-from backend.integrations.tts_provider import TTSProvider
+
+from backend.core.config import get_settings
 from backend.integrations.elevenlabs_provider import ElevenLabsProvider
 from backend.integrations.openai_tts_provider import OpenAITTSProvider
-from backend.core.config import get_settings
+from backend.integrations.tts_provider import TTSProvider
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,7 @@
 import os
+
 import openai
+
 from backend.integrations.tts_provider import TTSProvider
 
 

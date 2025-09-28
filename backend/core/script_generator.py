@@ -1,11 +1,12 @@
 import json
-import os
 import logging
-from typing import List, Union, Optional
-from backend.models.script import TextBlock, CodeBlock, LineRange
+import os
+from typing import List, Optional, Union
+
 from backend.integrations.ai_provider import AIProvider
 from backend.integrations.claude_provider import ClaudeProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
+from backend.models.script import CodeBlock, LineRange, TextBlock
 
 logger = logging.getLogger(__name__)
 
