@@ -4,7 +4,7 @@ import VideoPlayer from './VideoPlayer';
 import { ScriptData } from '../types/script';
 import { ApiService } from '../services/api';
 import './MainApp.css';
-import { env } from '@/common/env';
+import { env } from '../common/env';
 
 function MainApp() {
   const navigate = useNavigate();
