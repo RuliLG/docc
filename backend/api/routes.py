@@ -20,6 +20,14 @@ from backend.models.script import ScriptRequest, ScriptResponse
 from backend.models.tts import CacheStatsResponse, TTSRequest, TTSResponse
 # Define response models inline for documentation
 from typing import Dict, List, Optional, Any
+from models.errors import (
+    ProvidersResponse,
+    SystemCheckResponse,
+    QuickSystemCheckResponse,
+    HealthResponse,
+    ClearCacheResponse,
+    FileContentResponse,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -245,6 +253,7 @@ async def get_cache_stats():
 
 @router.delete(
     "/cache",
+    response_model=ClearCacheResponse,
     status_code=status.HTTP_200_OK,
     summary="Clear audio cache",
     description="Removes all cached audio files to free up storage space",
@@ -266,6 +275,7 @@ async def clear_cache():
 
 @router.get(
     "/health",
+    response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
     summary="Health check",
     description="Simple health check endpoint to verify API is running",
@@ -284,6 +294,7 @@ async def health_check():
 
 @router.get(
     "/available-providers",
+    response_model=ProvidersResponse,
     status_code=status.HTTP_200_OK,
     summary="Get available providers",
     description="Returns list of currently available and configured AI and TTS providers",
@@ -321,6 +332,7 @@ async def get_available_providers():
 
 @router.get(
     "/file-content",
+    response_model=FileContentResponse,
     status_code=status.HTTP_200_OK,
     summary="Get file content",
     description="Retrieves content of a file with optional line range filtering for code display",

@@ -4,9 +4,10 @@ import subprocess
 from typing import Any, Dict, Optional
 
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from backend.core.config import get_settings
+from models.errors import SystemCheckResponse, QuickSystemCheckResponse
 
 router = APIRouter()
 
@@ -181,7 +182,13 @@ async def check_openai_tts() -> Dict[str, Any]:
     return result
 
 
-@router.get("/system-check")
+@router.get(
+    "/system-check",
+    response_model=SystemCheckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Comprehensive system check",
+    description="Validates all required services and returns detailed status information"
+)
 async def system_check():
     """
     Comprehensive system check endpoint that validates all required services.
@@ -283,7 +290,13 @@ async def system_check():
     return response
 
 
-@router.get("/system-check/quick")
+@router.get(
+    "/system-check/quick",
+    response_model=QuickSystemCheckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Quick system check",
+    description="Fast validation of minimum system requirements without API calls"
+)
 async def quick_system_check():
     """
     Quick system check that only verifies if minimum requirements are met.

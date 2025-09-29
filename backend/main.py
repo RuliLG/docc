@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes import router
 from backend.core.config import get_settings
+from models.errors import RootResponse
 
 API_VERSION = "1.0.0"
 
@@ -52,30 +53,28 @@ def create_app():
     app = FastAPI(
         title=settings.app_name,
         description="""
-        **Docc Backend API** - AI-powered repository documentation tool
-        
-        This API analyzes code repositories and generates comprehensive documentation
-        scripts with audio narration. Perfect for creating automated video explanations
-        of codebases.
-        
-        ## Features
-        
-        * **AI-Powered Analysis**: Uses Claude Code or OpenCode to understand repositories
-        * **Structured Scripts**: Generates text and code blocks for storytelling
-        * **Audio Generation**: Creates narration using ElevenLabs or OpenAI TTS
-        * **File Content API**: Safely retrieves code with line highlighting
-        * **Cache Management**: Efficient audio caching with automatic cleanup
-        
-        ## Getting Started
-        
-        1. Ensure you have AI providers configured (Claude Code/OpenCode)
-        2. Configure TTS providers (ElevenLabs/OpenAI) for audio generation
-        3. Use `/generate-script` to analyze repositories and create documentation
-        
-        ## Provider Configuration
-        
-        Check `/available-providers` to see which providers are currently configured
-        and available for use.
+This API analyzes code repositories and generates comprehensive documentation
+scripts with audio narration. Perfect for creating automated video explanations
+of codebases.
+
+## Features
+
+* **AI-Powered Analysis**: Uses Claude Code or OpenCode to understand repositories
+* **Structured Scripts**: Generates text and code blocks for storytelling
+* **Audio Generation**: Creates narration using ElevenLabs or OpenAI TTS
+* **File Content API**: Safely retrieves code with line highlighting
+* **Cache Management**: Efficient audio caching with automatic cleanup
+
+## Getting Started
+
+1. Ensure you have AI providers configured (Claude Code/OpenCode)
+2. Configure TTS providers (ElevenLabs/OpenAI) for audio generation
+3. Use `/generate-script` to analyze repositories and create documentation
+
+## Provider Configuration
+
+Check `/available-providers` to see which providers are currently configured
+and available for use.
         """,
         version=API_VERSION,
         debug=settings.debug,
@@ -94,6 +93,7 @@ def create_app():
 
     @app.get(
         "/",
+        response_model=RootResponse,
         summary="API Information",
         description="Get basic information about the API including version and available providers",
         tags=["info"]
@@ -101,7 +101,7 @@ def create_app():
     async def root():
         """
         Root endpoint with API information.
-        
+
         Returns basic API metadata including the application name, version,
         current status, and information about available AI and TTS providers.
         """

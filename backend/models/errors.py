@@ -94,3 +94,48 @@ class ClearCacheResponse(BaseModel):
     message: str = Field(
         description="Success message"
     )
+
+
+# System Check Models
+class ServiceStatus(BaseModel):
+    """Status information for a service."""
+    
+    installed: Optional[bool] = Field(None, description="Whether the service is installed")
+    configured: Optional[bool] = Field(None, description="Whether the service is configured")
+    accessible: Optional[bool] = Field(None, description="Whether the service is accessible")
+    version: Optional[str] = Field(None, description="Service version if available")
+    error: Optional[str] = Field(None, description="Error message if any")
+    api_key_set: Optional[bool] = Field(None, description="Whether API key is configured")
+
+
+class RequirementsMet(BaseModel):
+    """Status of minimum system requirements."""
+    
+    ai_cli: bool = Field(description="Whether AI CLI tool is available")
+    tts_service: bool = Field(description="Whether TTS service is available")
+
+
+class SystemServices(BaseModel):
+    """Status of all system services."""
+    
+    claude_code: ServiceStatus = Field(description="Claude Code CLI status")
+    opencode: ServiceStatus = Field(description="OpenCode CLI status") 
+    elevenlabs: ServiceStatus = Field(description="ElevenLabs TTS status")
+    openai_tts: ServiceStatus = Field(description="OpenAI TTS status")
+
+
+class SystemCheckResponse(BaseModel):
+    """Comprehensive system check response."""
+    
+    system_ready: bool = Field(description="Whether the system meets all requirements")
+    requirements_met: RequirementsMet = Field(description="Status of minimum requirements")
+    services: SystemServices = Field(description="Detailed status of all services")
+    recommendations: List[str] = Field(description="List of recommendations to fix issues")
+
+
+class QuickSystemCheckResponse(BaseModel):
+    """Quick system check response."""
+    
+    system_ready: bool = Field(description="Whether the system meets minimum requirements")
+    has_ai_cli: bool = Field(description="Whether AI CLI tool is available")
+    has_tts: bool = Field(description="Whether TTS service is configured")
