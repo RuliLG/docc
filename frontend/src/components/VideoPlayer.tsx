@@ -51,8 +51,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ scriptData, sessionFolder, on
     pause,
     stop,
     isPlaying,
-    isPaused,
-    isLoading,
     error,
     setError,
   } = useAudioControls({

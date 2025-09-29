@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { VideoState, ScriptData } from '../types/script';
+import { ScriptData } from '../types/script';
 
 interface UseVideoPlayerProps {
   scriptData: ScriptData;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { CodeBlock } from '../types/script';
+import { CodeBlock, LineRange } from '../types/script';
 import Editor, { Monaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { FileText } from 'lucide-react';
@@ -63,7 +63,7 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ block }) => {
 
   const getHighlightedLines = (): number[] => {
     const lines: number[] = [];
-    block.relevant_lines.forEach((range: any) => {
+    block.relevant_lines.forEach((range: LineRange) => {
       // Handle both formats: {line: 20} and {from_line: 10, to_line: 15} or {from: 10, to: 15}
       if (range.line !== undefined && range.line !== null) {
         lines.push(range.line);
