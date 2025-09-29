@@ -176,9 +176,10 @@ function MainApp() {
               id="repositoryPath"
               value={repositoryPath}
               onChange={(e) => setRepositoryPath(e.target.value)}
-              placeholder="/absolute/path/to/repository"
+              placeholder="/host/home/path/to/repository"
               required
             />
+            <p className="text-sm text-gray-500">If the app is running in a Docker container, the repository path should be in the format: /host/home/path/to/repository instead of /Users/yourusername/path/to/repository</p>
           </div>
           <div className="flex flex-col gap-2 w-full">
             <Label htmlFor='question'>Question:</Label>
