@@ -86,7 +86,8 @@ async def test_generate_audio_success(client, mock_tts_manager):
 
     with patch("backend.api.routes.get_tts_manager", return_value=mock_tts_manager):
         response = client.post(
-            "/api/v1/generate-audio", json={"text": "Hello, world!"},
+            "/api/v1/generate-audio",
+            json={"text": "Hello, world!"},
         )
 
     assert response.status_code == 200
@@ -101,7 +102,8 @@ def test_generate_audio_failure(client, mock_tts_manager):
 
     with patch("backend.api.routes.get_tts_manager", return_value=mock_tts_manager):
         response = client.post(
-            "/api/v1/generate-audio", json={"text": "Hello, world!"},
+            "/api/v1/generate-audio",
+            json={"text": "Hello, world!"},
         )
 
     assert response.status_code == 500

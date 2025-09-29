@@ -96,7 +96,7 @@ and available for use.
         response_model=RootResponse,
         summary="API Information",
         description="Get basic information about the API including version and available providers",
-        tags=["info"]
+        tags=["info"],
     )
     async def root():
         """

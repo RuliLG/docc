@@ -187,7 +187,7 @@ async def check_openai_tts() -> Dict[str, Any]:
     response_model=SystemCheckResponse,
     status_code=status.HTTP_200_OK,
     summary="Comprehensive system check",
-    description="Validates all required services and returns detailed status information"
+    description="Validates all required services and returns detailed status information",
 )
 async def system_check():
     """
@@ -295,7 +295,7 @@ async def system_check():
     response_model=QuickSystemCheckResponse,
     status_code=status.HTTP_200_OK,
     summary="Quick system check",
-    description="Fast validation of minimum system requirements without API calls"
+    description="Fast validation of minimum system requirements without API calls",
 )
 async def quick_system_check():
     """

@@ -41,7 +41,9 @@ def script_generator_with_real_providers():
 
 class TestScriptGenerator:
     @pytest.mark.asyncio
-    async def test_generate_script_success(self, script_generator, mock_ai_provider, tmp_path):
+    async def test_generate_script_success(
+        self, script_generator, mock_ai_provider, tmp_path
+    ):
         """Test successful script generation with valid JSON response."""
         mock_response = json.dumps(
             [
@@ -60,7 +62,9 @@ class TestScriptGenerator:
 
         mock_ai_provider.analyze_repository.return_value = mock_response
 
-        result = await script_generator.generate(str(tmp_path), "How does pricing work?")
+        result = await script_generator.generate(
+            str(tmp_path), "How does pricing work?"
+        )
 
         assert len(result) == 2
         assert isinstance(result[0], TextBlock)
@@ -104,7 +108,10 @@ class TestScriptGenerator:
         """Test error handling for invalid JSON response."""
         mock_ai_provider.analyze_repository.return_value = "Invalid JSON response"
 
-        with pytest.raises(RuntimeError, match="All AI providers failed.*Failed to parse AI response as JSON"):
+        with pytest.raises(
+            RuntimeError,
+            match="All AI providers failed.*Failed to parse AI response as JSON",
+        ):
             await script_generator.generate(str(tmp_path), "How does pricing work?")
 
     @pytest.mark.asyncio
@@ -118,7 +125,9 @@ class TestScriptGenerator:
 
         mock_ai_provider.analyze_repository.return_value = mock_response
 
-        with pytest.raises(RuntimeError, match="All AI providers failed.*Failed to parse script blocks"):
+        with pytest.raises(
+            RuntimeError, match="All AI providers failed.*Failed to parse script blocks"
+        ):
             await script_generator.generate(str(tmp_path), "Test question")
 
     @patch("builtins.open", new_callable=mock_open, read_data="# Test System Prompt")
@@ -260,13 +269,19 @@ class TestScriptGenerator:
 
                 assert len(result) == 1
 
-    def test_get_providers_to_try_no_preference(self, script_generator_with_real_providers):
+    def test_get_providers_to_try_no_preference(
+        self, script_generator_with_real_providers
+    ):
         """Test getting all providers when no preference specified."""
         providers = script_generator_with_real_providers._get_providers_to_try(None)
         assert len(providers) == 2
 
-    def test_get_providers_to_try_with_preference(self, script_generator_with_real_providers):
+    def test_get_providers_to_try_with_preference(
+        self, script_generator_with_real_providers
+    ):
         """Test getting specific provider when preference specified."""
-        providers = script_generator_with_real_providers._get_providers_to_try("claude_code")
+        providers = script_generator_with_real_providers._get_providers_to_try(
+            "claude_code"
+        )
         assert len(providers) == 1
         assert isinstance(providers[0], ClaudeProvider)

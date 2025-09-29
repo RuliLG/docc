@@ -12,9 +12,14 @@ class TestElevenLabsProvider:
         mock_client = MagicMock()
         mock_elevenlabs_class.return_value = mock_client
 
-        with patch("backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True), \
-             patch.dict("backend.integrations.elevenlabs_provider.__dict__", {"ElevenLabs": mock_elevenlabs_class}), \
-             patch.dict("os.environ", {"ELEVENLABS_API_KEY": "test_key"}):
+        with patch(
+            "backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True
+        ), patch.dict(
+            "backend.integrations.elevenlabs_provider.__dict__",
+            {"ElevenLabs": mock_elevenlabs_class},
+        ), patch.dict(
+            "os.environ", {"ELEVENLABS_API_KEY": "test_key"}
+        ):
             provider = ElevenLabsProvider()
             yield provider
 
@@ -24,16 +29,20 @@ class TestElevenLabsProvider:
         mock_client = MagicMock()
         mock_elevenlabs_class.return_value = mock_client
 
-        with patch.dict("os.environ", {}, clear=True), \
-             patch("backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True), \
-             patch.dict("backend.integrations.elevenlabs_provider.__dict__", {"ElevenLabs": mock_elevenlabs_class}):
+        with patch.dict("os.environ", {}, clear=True), patch(
+            "backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True
+        ), patch.dict(
+            "backend.integrations.elevenlabs_provider.__dict__",
+            {"ElevenLabs": mock_elevenlabs_class},
+        ):
             provider = ElevenLabsProvider()
             yield provider
 
     @pytest.fixture
     def provider_without_library(self):
-        with patch.dict("os.environ", {"ELEVENLABS_API_KEY": "test_key"}), \
-             patch("backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", False):
+        with patch.dict("os.environ", {"ELEVENLABS_API_KEY": "test_key"}), patch(
+            "backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", False
+        ):
             provider = ElevenLabsProvider()
             yield provider
 
@@ -48,16 +57,19 @@ class TestElevenLabsProvider:
         mock_client = MagicMock()
         mock_elevenlabs_class.return_value = mock_client
 
-        with patch("backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True), \
-             patch.dict("backend.integrations.elevenlabs_provider.__dict__", {"ElevenLabs": mock_elevenlabs_class}), \
-             patch.dict(
-                "os.environ",
-                {
-                    "ELEVENLABS_API_KEY": "custom_key",
-                    "ELEVENLABS_VOICE": "CustomVoice",
-                    "ELEVENLABS_MODEL": "custom_model",
-                },
-            ):
+        with patch(
+            "backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True
+        ), patch.dict(
+            "backend.integrations.elevenlabs_provider.__dict__",
+            {"ElevenLabs": mock_elevenlabs_class},
+        ), patch.dict(
+            "os.environ",
+            {
+                "ELEVENLABS_API_KEY": "custom_key",
+                "ELEVENLABS_VOICE": "CustomVoice",
+                "ELEVENLABS_MODEL": "custom_model",
+            },
+        ):
             provider = ElevenLabsProvider()
             assert provider.api_key == "custom_key"
             assert provider.default_voice == "CustomVoice"
@@ -123,20 +135,21 @@ class TestElevenLabsProvider:
         mock_elevenlabs_class = Mock()
         mock_client = MagicMock()
         mock_elevenlabs_class.return_value = mock_client
-        mock_client.text_to_speech.convert = Mock(
-            return_value=iter([b"audio"])
-        )
+        mock_client.text_to_speech.convert = Mock(return_value=iter([b"audio"]))
 
-        with patch("backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True), \
-             patch.dict("backend.integrations.elevenlabs_provider.__dict__", {"ElevenLabs": mock_elevenlabs_class}), \
-             patch.dict(
-                "os.environ",
-                {
-                    "ELEVENLABS_API_KEY": "test_key",
-                    "ELEVENLABS_VOICE": "Nicole",
-                    "ELEVENLABS_MODEL": "eleven_multilingual_v2",
-                },
-            ):
+        with patch(
+            "backend.integrations.elevenlabs_provider.ELEVENLABS_AVAILABLE", True
+        ), patch.dict(
+            "backend.integrations.elevenlabs_provider.__dict__",
+            {"ElevenLabs": mock_elevenlabs_class},
+        ), patch.dict(
+            "os.environ",
+            {
+                "ELEVENLABS_API_KEY": "test_key",
+                "ELEVENLABS_VOICE": "Nicole",
+                "ELEVENLABS_MODEL": "eleven_multilingual_v2",
+            },
+        ):
             provider = ElevenLabsProvider()
             result = await provider.generate_speech("Test text")
 
@@ -145,4 +158,4 @@ class TestElevenLabsProvider:
                 text="Test text",
                 voice_id="Nicole",
                 model_id="eleven_multilingual_v2",
-                    )
+            )

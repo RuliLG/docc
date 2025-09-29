@@ -124,7 +124,9 @@ class TestClaudeProvider:
 
     @pytest.mark.asyncio
     @patch("subprocess.run")
-    async def test_analyze_repository_command_failed(self, mock_run, claude_provider, tmp_path):
+    async def test_analyze_repository_command_failed(
+        self, mock_run, claude_provider, tmp_path
+    ):
         """Test when Claude CLI command fails."""
         mock_run.side_effect = subprocess.CalledProcessError(
             returncode=1, cmd=["claude"], stderr="Command failed: invalid prompt"
