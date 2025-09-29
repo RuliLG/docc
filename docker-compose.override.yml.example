@@ -21,3 +21,12 @@ services:
     environment:
       # You can also override environment variables here
       # - REPOSITORY_BASE_PATH=/repositories
+
+      # Override or set additional API keys if not in .env
+      # - ELEVENLABS_API_KEY=your_key_here
+      # - OPENAI_API_KEY=your_key_here
+      # - ANTHROPIC_API_KEY=your_key_here
+      # - GOOGLE_GENERATIVE_AI_API_KEY=your_key_here
+      # - XAI_API_KEY=your_key_here
+      # - AI_GATEWAY_API_KEY=your_key_here
+      # - OPENROUTER_API_KEY=your_key_here
