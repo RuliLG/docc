@@ -18,28 +18,28 @@ export default function ServiceStatus({ name, status }: { name: string, status: 
               <span className="text-sm">{status.version}</span>
             </div>
           )}
-          {status.installed !== undefined && (
+          {typeof status.installed === 'boolean' && (
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Installed:</span>
               { status.installed && <CheckCircleIcon className="w-4 h-4 text-primary" /> }
               { !status.installed && <XCircleIcon className="w-4 h-4 text-destructive" /> }
             </div>
           )}
-          {status.configured !== undefined && (
+          {typeof status.configured === 'boolean' && (
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Configured:</span>
               { status.configured && <CheckCircleIcon className="w-4 h-4 text-primary" /> }
               { !status.configured && <XCircleIcon className="w-4 h-4 text-destructive" /> }
             </div>
           )}
-          {status.api_key_set !== undefined && (
+          {typeof status.api_key_set === 'boolean' && (
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">API Key:</span>
               { status.api_key_set && <CheckCircleIcon className="w-4 h-4 text-primary" /> }
               { !status.api_key_set && <XCircleIcon className="w-4 h-4 text-destructive" /> }
             </div>
           )}
-          {status.accessible !== undefined && (
+          {typeof status.accessible === 'boolean' && (
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Accessible:</span>
               { status.accessible && <CheckCircleIcon className="w-4 h-4 text-primary" /> }

@@ -18,13 +18,8 @@ from backend.integrations.openai_tts_provider import OpenAITTSProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
 from backend.models.script import ScriptRequest, ScriptResponse
 from backend.models.tts import CacheStatsResponse, TTSRequest, TTSResponse
-
-# Define response models inline for documentation
-from typing import Dict, List, Optional, Any
-from models.errors import (
+from backend.models.errors import (
     ProvidersResponse,
-    SystemCheckResponse,
-    QuickSystemCheckResponse,
     HealthResponse,
     ClearCacheResponse,
     FileContentResponse,

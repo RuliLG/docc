@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.routes import router
 from backend.core.config import get_settings
-from models.errors import RootResponse
+from backend.models.errors import RootResponse
 
 API_VERSION = "1.0.0"
 

@@ -1,13 +1,12 @@
 import asyncio
-import os
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 from fastapi import APIRouter, status
 
 from backend.core.config import get_settings
-from models.errors import SystemCheckResponse, QuickSystemCheckResponse
+from backend.models.errors import SystemCheckResponse, QuickSystemCheckResponse
 
 router = APIRouter()
 
