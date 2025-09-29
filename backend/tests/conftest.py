@@ -9,7 +9,6 @@ for key in list(os.environ.keys()):
     if key.startswith(
         (
             "CORS_",
-            "DOCC_",
             "LOG_",
             "DEBUG",
             "DEVELOPMENT",
@@ -18,12 +17,17 @@ for key in list(os.environ.keys()):
             "ELEVENLABS_",
             "OPENAI_",
             "CLAUDE_",
+            "ANTHROPIC_",
+            "GOOGLE_GENERATIVE_",
+            "XAI_",
+            "AI_GATEWAY_",
+            "OPENROUTER_",
         )
     ):
         os.environ.pop(key, None)
 
 # Set test environment variables before importing any modules
-os.environ["DOCC_CORS_ORIGINS"] = "http://localhost:3000,http://127.0.0.1:3000"
+os.environ["CORS_ORIGINS"] = "http://localhost:3000,http://127.0.0.1:3000"
 os.environ["LOG_LEVEL"] = "INFO"
 os.environ["DEBUG"] = "false"
 os.environ["DEVELOPMENT"] = "false"
@@ -37,7 +41,7 @@ os.environ["LOG_FILE"] = "test.log"
 def mock_settings_env():
     """Automatically mock environment for all tests."""
     test_env = {
-        "DOCC_CORS_ORIGINS": "http://localhost:3000,http://127.0.0.1:3000",
+        "CORS_ORIGINS": "http://localhost:3000,http://127.0.0.1:3000",
         "LOG_LEVEL": "INFO",
         "DEBUG": "false",
         "DEVELOPMENT": "false",
