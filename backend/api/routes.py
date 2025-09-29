@@ -5,7 +5,7 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 
 from backend.api import system_check
@@ -18,6 +18,8 @@ from backend.integrations.openai_tts_provider import OpenAITTSProvider
 from backend.integrations.opencode_provider import OpenCodeProvider
 from backend.models.script import ScriptRequest, ScriptResponse
 from backend.models.tts import CacheStatsResponse, TTSRequest, TTSResponse
+# Define response models inline for documentation
+from typing import Dict, List, Optional, Any
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -71,8 +73,30 @@ def _cleanup_old_audio_files():
         logger.debug(f"Removed oldest audio file to maintain cache limit: {oldest_key}")
 
 
-@router.post("/generate-script", response_model=ScriptResponse)
+@router.post(
+    "/generate-script",
+    response_model=ScriptResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate documentation script",
+    description="Analyzes a repository and generates a structured script explaining the codebase with audio files",
+    responses={
+        200: {"description": "Script generated successfully with audio files"},
+        400: {"description": "Invalid request parameters (repository path, question, etc.)"},
+        404: {"description": "Repository not found or inaccessible"},
+        500: {"description": "Internal server error (AI provider unavailable, TTS generation failed, etc.)"},
+    }
+)
 async def generate_script(request: ScriptRequest):
+    """
+    Generate a comprehensive documentation script for a repository.
+    
+    This endpoint analyzes the provided repository using AI providers (Claude Code or OpenCode)
+    to answer the user's question about the codebase. It returns a structured script with
+    text and code blocks, along with pre-generated audio files for narration.
+    
+    The script follows a storytelling format that can be used to create automated video
+    explanations of the codebase.
+    """
     try:
         script_generator = get_script_generator()
         script = await script_generator.generate(
@@ -121,8 +145,25 @@ async def generate_script(request: ScriptRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/generate-audio", response_model=TTSResponse)
+@router.post(
+    "/generate-audio",
+    response_model=TTSResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate audio from text",
+    description="Converts text to speech using available TTS providers (ElevenLabs or OpenAI)",
+    responses={
+        200: {"description": "Audio generated successfully"},
+        400: {"description": "Invalid text input (empty, too long, etc.)"},
+        500: {"description": "TTS provider unavailable or generation failed"},
+    }
+)
 async def generate_audio(request: TTSRequest):
+    """
+    Generate audio file from text input.
+    
+    Converts the provided text to speech using the configured TTS provider.
+    The audio is cached temporarily and can be accessed via the returned URL.
+    """
     try:
         tts_manager = get_tts_manager()
         audio_bytes = await tts_manager.generate_or_get_cached_audio(text=request.text)
@@ -141,8 +182,23 @@ async def generate_audio(request: TTSRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/audio/{audio_id}")
+@router.get(
+    "/audio/{audio_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Stream audio file",
+    description="Retrieves and streams a temporarily cached audio file",
+    responses={
+        200: {"description": "Audio file streamed successfully", "content": {"audio/mpeg": {}}},
+        404: {"description": "Audio file not found or expired"},
+    }
+)
 async def get_audio(audio_id: str):
+    """
+    Stream a cached audio file.
+    
+    Retrieves a temporarily stored audio file by its UUID. Audio files are automatically
+    cleaned up after 1 hour or when the cache exceeds the maximum size limit.
+    """
     if audio_id not in temp_audio_files:
         raise HTTPException(status_code=404, detail="Audio file not found")
 
@@ -159,8 +215,23 @@ async def get_audio(audio_id: str):
     )
 
 
-@router.get("/cache/stats", response_model=CacheStatsResponse)
+@router.get(
+    "/cache/stats",
+    response_model=CacheStatsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get cache statistics",
+    description="Returns information about the current state of the audio cache",
+    responses={
+        200: {"description": "Cache statistics retrieved successfully"},
+    }
+)
 async def get_cache_stats():
+    """
+    Get audio cache statistics.
+    
+    Returns detailed information about the audio cache including size, 
+    number of cached files, and storage usage.
+    """
     tts_manager = get_tts_manager()
     cache_size = tts_manager.get_cache_size()
     cache_files_count = len(list(tts_manager.cache_dir.glob("*.mp3")))
@@ -172,19 +243,54 @@ async def get_cache_stats():
     )
 
 
-@router.delete("/cache")
+@router.delete(
+    "/cache",
+    status_code=status.HTTP_200_OK,
+    summary="Clear audio cache",
+    description="Removes all cached audio files to free up storage space",
+    responses={
+        200: {"description": "Cache cleared successfully"},
+    }
+)
 async def clear_cache():
+    """
+    Clear all cached audio files.
+    
+    Removes all audio files from the cache directory to free up storage space.
+    This operation cannot be undone.
+    """
     tts_manager = get_tts_manager()
     tts_manager.clear_cache()
     return {"message": "Cache cleared successfully"}
 
 
-@router.get("/health")
+@router.get(
+    "/health",
+    status_code=status.HTTP_200_OK,
+    summary="Health check",
+    description="Simple health check endpoint to verify API is running",
+    responses={
+        200: {"description": "API is healthy and running"},
+    }
+)
 async def health_check():
+    """
+    Health check endpoint.
+    
+    Returns a simple status message indicating the API is running and responsive.
+    """
     return {"status": "healthy"}
 
 
-@router.get("/available-providers")
+@router.get(
+    "/available-providers",
+    status_code=status.HTTP_200_OK,
+    summary="Get available providers",
+    description="Returns list of currently available and configured AI and TTS providers",
+    responses={
+        200: {"description": "Provider list retrieved successfully"},
+    }
+)
 async def get_available_providers():
     """
     Get list of available AI and TTS providers.
@@ -213,9 +319,30 @@ async def get_available_providers():
     return {"ai_providers": ai_providers, "tts_providers": tts_providers}
 
 
-@router.get("/file-content")
-async def get_file_content(file_path: str, from_line: int = None, to_line: int = None):
-    """Get content of a file with optional line range filtering."""
+@router.get(
+    "/file-content",
+    status_code=status.HTTP_200_OK,
+    summary="Get file content",
+    description="Retrieves content of a file with optional line range filtering for code display",
+    responses={
+        200: {"description": "File content retrieved successfully"},
+        400: {"description": "Invalid file path or line range"},
+        404: {"description": "File not found"},
+        500: {"description": "Error reading file"},
+    }
+)
+async def get_file_content(
+    file_path: str = Query(..., description="Absolute path to the file to read"),
+    from_line: int = Query(None, description="Starting line number (1-based)", ge=1),
+    to_line: int = Query(None, description="Ending line number (1-based)", ge=1)
+):
+    """
+    Get file content with optional line filtering.
+    
+    Safely reads a file's content with optional line range filtering. This is used
+    by the frontend to display code blocks with highlighted sections. Includes
+    security checks to prevent unauthorized file access.
+    """
     try:
         # Security check - ensure the path is absolute and exists
         path = Path(file_path)

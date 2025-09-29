@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info(f"Starting {settings.app_name}")
     logger.info(f"Debug mode: {settings.debug}")
-    logger.info(f"CORS origins: {settings.docc_cors_origins}")
+    logger.info(f"CORS origins: {settings.cors_origins}")
 
     # Create cache directory
     settings.get_cache_path().mkdir(exist_ok=True)
@@ -51,7 +51,32 @@ def create_app():
 
     app = FastAPI(
         title=settings.app_name,
-        description="AI-powered repository documentation tool API",
+        description="""
+        **Docc Backend API** - AI-powered repository documentation tool
+        
+        This API analyzes code repositories and generates comprehensive documentation
+        scripts with audio narration. Perfect for creating automated video explanations
+        of codebases.
+        
+        ## Features
+        
+        * **AI-Powered Analysis**: Uses Claude Code or OpenCode to understand repositories
+        * **Structured Scripts**: Generates text and code blocks for storytelling
+        * **Audio Generation**: Creates narration using ElevenLabs or OpenAI TTS
+        * **File Content API**: Safely retrieves code with line highlighting
+        * **Cache Management**: Efficient audio caching with automatic cleanup
+        
+        ## Getting Started
+        
+        1. Ensure you have AI providers configured (Claude Code/OpenCode)
+        2. Configure TTS providers (ElevenLabs/OpenAI) for audio generation
+        3. Use `/generate-script` to analyze repositories and create documentation
+        
+        ## Provider Configuration
+        
+        Check `/available-providers` to see which providers are currently configured
+        and available for use.
+        """,
         version=API_VERSION,
         debug=settings.debug,
         lifespan=lifespan,
@@ -59,7 +84,7 @@ def create_app():
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.docc_cors_origins,
+        allow_origins=settings.cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -67,9 +92,19 @@ def create_app():
 
     app.include_router(router, prefix="/api/v1")
 
-    @app.get("/")
+    @app.get(
+        "/",
+        summary="API Information",
+        description="Get basic information about the API including version and available providers",
+        tags=["info"]
+    )
     async def root():
-        """Root endpoint with API information."""
+        """
+        Root endpoint with API information.
+        
+        Returns basic API metadata including the application name, version,
+        current status, and information about available AI and TTS providers.
+        """
         return {
             "name": settings.app_name,
             "version": API_VERSION,
