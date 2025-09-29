@@ -13,21 +13,17 @@ class Settings(BaseSettings):
     # Application settings
     app_name: str = "Docc - AI Documentation Tool"
     debug: bool = False
-    development: bool = False
+    development: bool = True
 
     # Server settings
     api_host: str = "0.0.0.0"
     api_port: int = 8000
 
     # CORS settings
-    docc_cors_origins: Optional[List[str]] = None
+    cors_origins: Optional[List[str]] = None
 
     # Security
     secret_key: str = "default-secret-key-change-in-production"
-
-    # AI Provider settings
-    claude_api_key: Optional[str] = None
-    opencode_api_key: Optional[str] = None
 
     # TTS Provider settings
     elevenlabs_api_key: Optional[str] = None
@@ -44,19 +40,19 @@ class Settings(BaseSettings):
     # Frontend settings
     react_app_api_base_url: str = "http://localhost:8000/api/v1"
 
-    @field_validator("docc_cors_origins", mode="before")
+    @field_validator("cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v):
         if v is None or v == "":
-            return ["http://localhost:3000"]
+            return ["http://localhost:3000", "http://127.0.0.1:3000"]
         if isinstance(v, str) and v.strip():
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, str) and not v.strip():
             # Empty string, use default
-            return ["http://localhost:3000"]
+            return ["http://localhost:3000", "http://127.0.0.1:3000"]
         elif isinstance(v, list):
-            return v if v else ["http://localhost:3000"]
-        return ["http://localhost:3000"]
+            return v if v else ["http://localhost:3000", "http://127.0.0.1:3000"]
+        return ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @field_validator("log_level")
     @classmethod
@@ -89,22 +85,44 @@ class Settings(BaseSettings):
 
     def has_ai_provider(self) -> bool:
         """Check if at least one AI provider is configured."""
-        return bool(self.claude_api_key or self.opencode_api_key)
+        # Import here to avoid circular imports
+        from backend.integrations.claude_provider import ClaudeProvider
+        from backend.integrations.opencode_provider import OpenCodeProvider
+
+        claude = ClaudeProvider()
+        opencode = OpenCodeProvider()
+        return claude.is_available() or opencode.is_available()
 
     def has_tts_provider(self) -> bool:
         """Check if at least one TTS provider is configured."""
-        return bool(self.elevenlabs_api_key or self.openai_api_key)
+        from backend.integrations.elevenlabs_provider import ElevenLabsProvider
+        from backend.integrations.openai_tts_provider import OpenAITTSProvider
+
+        elevenlabs = ElevenLabsProvider()
+        openai = OpenAITTSProvider()
+        return elevenlabs.is_available() or openai.is_available()
 
     def get_available_providers(self) -> dict:
         """Get information about available providers."""
+        # Import here to avoid circular imports
+        from backend.integrations.claude_provider import ClaudeProvider
+        from backend.integrations.opencode_provider import OpenCodeProvider
+        from backend.integrations.elevenlabs_provider import ElevenLabsProvider
+        from backend.integrations.openai_tts_provider import OpenAITTSProvider
+
+        claude = ClaudeProvider()
+        opencode = OpenCodeProvider()
+        elevenlabs = ElevenLabsProvider()
+        openai = OpenAITTSProvider()
+
         return {
             "ai_providers": {
-                "claude": bool(self.claude_api_key),
-                "opencode": bool(self.opencode_api_key),
+                "claude": claude.is_available(),
+                "opencode": opencode.is_available(),
             },
             "tts_providers": {
-                "elevenlabs": bool(self.elevenlabs_api_key),
-                "openai": bool(self.openai_api_key),
+                "elevenlabs": elevenlabs.is_available(),
+                "openai": openai.is_available(),
             },
         }
 
