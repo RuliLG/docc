@@ -37,7 +37,7 @@ docc/
 
 - Python 3.8+
 - Node.js 16+
-- Claude Code CLI (recommended) or Opencode CLI
+- Claude Code CLI (recommended) or OpenCode CLI
 - ElevenLabs or OpenAI TTS
 
 ### Docker Setup
@@ -151,4 +151,4 @@ pytest tests/ -v
 
 ## 📝 License
 
-This project is part of a university capstone project and is for educational purposes.
+MIT
